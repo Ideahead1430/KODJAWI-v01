@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Panduan Naqli untuk Aqli</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Pembetulan)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -153,13 +153,8 @@
     .data-table th { color: var(--fg-muted); font-weight: 500; font-size: 0.7rem; text-transform: uppercase; }
     .data-table td:first-child { font-size: 1.25rem; text-align: center; width: 50px; }
 
-    .footer-link {
-      color: var(--fg-muted);
-      transition: color 0.2s;
-    }
-    .footer-link:hover {
-      color: var(--accent);
-    }
+    .footer-link { color: var(--fg-muted); transition: color 0.2s; }
+    .footer-link:hover { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -175,7 +170,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Transliterasi & Pengkodan Kod Jawi</p>
+        <p class="text-gray-400">Fasa 1: Integriti Ejaan & Logik</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -193,7 +188,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: haram, halal, iman..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: ibrahim, iman, malam..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -268,25 +263,12 @@
   <footer class="bg-black/20 border-t border-gray-800 mt-12 py-8">
     <div class="max-w-6xl mx-auto px-4">
       <div class="grid md:grid-cols-2 gap-8 text-sm text-gray-400">
-        
-        <!-- Info Hakcipta & Penyelaras -->
         <div class="space-y-3">
           <h4 class="text-amber-400 font-semibold uppercase tracking-wider text-xs mb-2">Maklumat Projek</h4>
-          <p>
-            <span class="text-gray-300 font-medium">Hakcipta Kod Jawi:</span><br>
-            Mohamed Bin Abbas (INSTITUT TAHFIZ AL-QURAN LIL MUTTAQIN)
-          </p>
-          <p>
-            <span class="text-gray-300 font-medium">Penyelaras:</span><br>
-            Yayasan Peradaban Jawi Nusantara (YPJN)
-          </p>
-          <p>
-            <span class="text-gray-300 font-medium">Sistem Provider:</span><br>
-            Ideahead Studio
-          </p>
+          <p><span class="text-gray-300 font-medium">Hakcipta Kod Jawi:</span><br>Mohamed Bin Abbas (INSTITUT TAHFIZ AL-QURAN LIL MUTTAQIN)</p>
+          <p><span class="text-gray-300 font-medium">Penyelaras:</span><br>Yayasan Peradaban Jawi Nusantara (YPJN)</p>
+          <p><span class="text-gray-300 font-medium">Sistem Provider:</span><br>Ideahead Studio</p>
         </div>
-
-        <!-- Info Hubungi -->
         <div class="space-y-3 text-right">
            <h4 class="text-amber-400 font-semibold uppercase tracking-wider text-xs mb-2">Hubungi Kami</h4>
            <div class="flex flex-col md:items-end gap-2">
@@ -300,9 +282,7 @@
               </a>
            </div>
         </div>
-        
       </div>
-      
       <div class="border-t border-gray-800 mt-8 pt-6 text-center text-xs text-gray-600">
         &copy; 2024 Sistem Kod Jawi. Hak Cipta Terpelihara.
       </div>
@@ -327,10 +307,30 @@
 
     const NEGATIVE_WORDS = ['munafik', 'haram', 'zalim', 'kafir', 'fasik', 'keji', 'jadah', 'sombong'];
     
-    // Mapping untuk transliterasi fallback
+    // KAMUS KHAS UNTUK EJAAN JAWI YANG BETUL (Rumi -> Jawi)
+    // Ini menyelesaikan masalah ejaan 'Ibrahim' -> 'ابراهيم' vs 'ايبراهيم'
+    const KAMUS_KHAS = {
+      "ibrahim": "ابراهيم", "ibnu": "ابن", "imran": "عمران", "iman": "ايمان",
+      "kitab": "كتاب", "ilmu": "علم", "waktu": "وقتو", "huruf": "حروف",
+      "hikmah": "حكمة", "haram": "حرام", "halal": "حلال", "akhirat": "اخرة",
+      "dunia": "دنيا", "daulat": "داولت", "fikir": "فيكير", "nikmat": "نعمة",
+      "rahsia": "رحسيا", "redha": "رضا", "roh": "روح", "riya": "ريا",
+      "saksi": "ساکسي", "solat": "صلاة", "syukur": "شکر", "taat": "طاعت",
+      "taubat": "توبة", "akhir": "اخير", "awal": "اول",
+      "isnin": "ايسنين", "selasa": "ثلاسا", "rabu": "رابو", 
+      "khamis": "خميس", "jumaat": "جومات", "sabtu": "سبتو", "ahad": "احد",
+      "januari": "جانواري", "februari": "فيبرواري", "mac": "ماچ", 
+      "april": "اپريل", "mei": "مي", "jun": "جون", "julai": "جولاي",
+      "ogos": "اوغوس", "september": "سڤتامبر", "oktober": "اکتوبر",
+      "november": "نوڤمبر", "disember": "ديسمبر"
+    };
+    
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
     const CONS_CLUSTER = { 'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' };
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
+
+    // Helper to check consonant
+    const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','و','لا','ء'].includes(c);
 
     // ================= STATE =================
     let historyData = [];
@@ -357,11 +357,21 @@
 
     // ================= LOGIC TRANSLITERASI (RUMI -> JAWI) =================
     async function getJawiText(rumiText) {
+      // 1. Check Kamus Khas Dulu (Paling Penting untuk nama khas)
+      const lowerRumi = rumiText.toLowerCase();
+      if (KAMUS_KHAS[lowerRumi]) {
+        updateApiStatus('local'); // Anggap lokal kerana kamus manual
+        return KAMUS_KHAS[lowerRumi];
+      }
+
+      // 2. Cuba API
       const apiResult = await tryApiFetch(rumiText);
       if (apiResult) {
         updateApiStatus('api');
         return apiResult;
       }
+
+      // 3. Fallback Fonetik
       updateApiStatus('local');
       return localTransliterate(rumiText);
     }
@@ -384,30 +394,42 @@
     function localTransliterate(text) {
       if (!text) return '';
       text = text.toLowerCase().trim();
-      return text.split(/\s+/).map(word => {
-        let result = ''; let i = 0; const len = word.length;
-        while (i < len) {
-          const c = word[i]; const next = word[i+1] || ''; const next2 = word[i+2] || '';
-          if (i === 0 && 'aiueo'.includes(c)) {
-            if (c === 'a') result += 'ا'; else if (c === 'i') result += 'اي'; else if (c === 'u') result += 'او';
-            else if (c === 'e') result += 'اي'; else result += 'او'; i++; continue;
-          }
-          if (CONS_CLUSTER[c+next]) { result += CONS_CLUSTER[c+next]; i+=2; continue; }
-          if (CONS_MAP[c]) {
-            if (next === 'a') {
-              const charAfterA = next2; const isEnd = (i+2 >= len);
-              if (isEnd) { result += CONS_MAP[c] + 'ا'; i+=2; continue; }
-              if (CONS_MAP[charAfterA] || CONS_CLUSTER[next2+word[i+3]]) { result += CONS_MAP[c]; i+=2; continue; }
-              result += CONS_MAP[c] + 'ا'; i+=2; continue;
-            }
-            if ('iueo'.includes(next)) {
-              const vMap = { 'i':'ي', 'u':'و', 'e':'ي', 'o':'و' };
-              result += CONS_MAP[c] + vMap[next]; i+=2; continue;
-            }
-            result += CONS_MAP[c]; i++;
-          } else { result += c; i++; }
-        }
-        return result;
+      
+      // Check kamus lagi sekali untuk multi-word
+      let words = text.split(/\s+/);
+      return words.map(w => {
+         if (KAMUS_KHAS[w]) return KAMUS_KHAS[w];
+         
+         let result = ''; let i = 0; const len = w.length;
+         while (i < len) {
+           const c = w[i]; const next = w[i+1] || ''; const next2 = w[i+2] || '';
+           if (i === 0 && 'aiueo'.includes(c)) {
+             // Peningkatan: 'I' di awal diikuti konsonan biasanya 'ا' (Alif) dalam jawi, bukan 'اي' (Alif Ya)
+             // Kecuali 'I' bersendirian atau diikuti vokal.
+             if (c === 'i' && CONS_MAP[next]) { result += 'ا'; i++; continue; } // Ibrahim -> ابراهيم
+             if (c === 'a') result += 'ا'; 
+             else if (c === 'i') result += 'اي'; 
+             else if (c === 'u') result += 'او';
+             else if (c === 'e') result += 'اي'; 
+             else result += 'او'; 
+             i++; continue;
+           }
+           if (CONS_CLUSTER[c+next]) { result += CONS_CLUSTER[c+next]; i+=2; continue; }
+           if (CONS_MAP[c]) {
+             if (next === 'a') {
+               const charAfterA = next2; const isEnd = (i+2 >= len);
+               if (isEnd) { result += CONS_MAP[c] + 'ا'; i+=2; continue; }
+               if (CONS_MAP[charAfterA] || CONS_CLUSTER[next2+word[i+3]]) { result += CONS_MAP[c]; i+=2; continue; }
+               result += CONS_MAP[c] + 'ا'; i+=2; continue;
+             }
+             if ('iueo'.includes(next)) {
+               const vMap = { 'i':'ي', 'u':'و', 'e':'ي', 'o':'و' };
+               result += CONS_MAP[c] + vMap[next]; i+=2; continue;
+             }
+             result += CONS_MAP[c]; i++;
+           } else { result += c; i++; }
+         }
+         return result;
       }).join(' ');
     }
 
@@ -441,25 +463,45 @@
         let char = word[i];
         let next = word[i + 1] || '';
         let nextNext = word[i + 2] || '';
+        let prev = word[i - 1] || '';
 
-        // 1. SPECIAL PATTERNS
+        // ==========================================
+        // 1. POLA KHAS 3 HURUF (Priority Tinggi)
+        // ==========================================
+        
+        // Pola نيا
         if (char === 'ن' && next === 'ي' && nextNext === 'ا') {
           addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas');
           i += 3; continue;
         }
-        if (char === 'ر' && next === 'ي') {
-          addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Pola Khas ري', 'Pola Khas');
-          i += 2; continue;
+        
+        // Pola عاء
+        if (char === 'ع' && next === 'ا' && nextNext === 'ء') {
+           addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء', 'Pola Khas');
+           i += 3; continue;
         }
+
+        // Pola ڽيا, قيا, زيا
         if ((char === 'ڽ' || char === 'ق' || char === 'ز') && next === 'ي' && nextNext === 'ا') {
           let k = KOD_JAWI[char];
           addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas');
           i += 3; continue;
         }
-        if (char === 'ع' && next === 'ا' && nextNext === 'ء') {
-          addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء', 'Pola Khas');
-          i += 3; continue;
+        
+        // Pola C + ي + C (Suku kata 3 huruf di tengah/akhir)
+        // Contoh: كيت (Kita), هيم (Him dalam Ibrahim)
+        if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
+           let k1 = KOD_JAWI[char];
+           let k3 = KOD_JAWI[nextNext];
+           addPart(`dikuasai oleh ${k1.toLowerCase()} yang ada tanda-tanda kejayaan serta ${k3.toLowerCase()}`, char+'ي'+nextNext, 'Pola 3 Huruf', 'Kombinasi');
+           i += 3; continue;
         }
+
+        // ==========================================
+        // 2. GABUNGAN 2 HURUF
+        // ==========================================
+
+        // Gabungan لا
         if (char === 'ل' && next === 'ا') {
           addPart('cerita-cerita', 'لا', 'Cerita-cerita', 'Pola Khas');
           if (nextNext && KOD_JAWI[nextNext]) {
@@ -469,20 +511,51 @@
           continue;
         }
 
-        // 2. ALIF RULES
+        // Gabungan ري
+        if (char === 'ر' && next === 'ي') {
+          addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
+          i += 2; continue;
+        }
+
+        // Gabungan را
+        if (char === 'ر' && next === 'ا') {
+          addPart('keyakinan dengan adanya aturan', 'را', 'Gabungan را', 'Kombinasi');
+          i += 2; continue; // Skip Ra dan Alif
+        }
+        
+        // Gabungan Huruf + Ya (Di akhir perkataan sahaja, jika bukan C+Y+C)
+        // Contoh: Ali (الي) -> L + Y
+        // Kita perlu check jika ia di akhir.
+        if (isKonsonan(char) && next === 'ي' && (i === len - 2)) {
+             let k = KOD_JAWI[char];
+             addPart(`dikuasai oleh ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi');
+             i += 2; continue;
+        }
+
+        // ==========================================
+        // 3. PERATURAN HURUF TUNGGAL (POSISI)
+        // ==========================================
+
+        // --- ALIF (ا) ---
         if (char === 'ا') {
+          // Awal Perkataan
           if (i === 0) {
             if (next === 'ي') {
+              // Ai / I panjang (contoh: Aiman, Isyak? - sebenarnya Isyak -> اشق, Aiman -> ايمان)
+              // Peraturan: "Awal suku kata dengan ا + ي (ai/ i panjang) → dikuasai oleh aturan yang ada tanda-tanda kejayaan"
               addPart('dikuasai oleh aturan yang ada tanda-tanda kejayaan', 'اي', 'Alif+Ya Awal', 'Kombinasi');
               i += 2;
             } else if (next && KOD_JAWI[next]) {
+              // Alif + Konsonan
               addPart(`aturan berkaitan ${KOD_JAWI[next].toLowerCase()}`, 'ا'+next, 'Alif+Konsonan', 'Kombinasi');
               i += 2; 
             } else {
               addPart('aturan', 'ا', 'Aturan', 'Biasa');
               i++;
             }
-          } else if (i < len - 1) {
+          } 
+          // Tengah Perkataan
+          else if (i < len - 1) {
             if (next === 'ل') {
               addPart('untuk diatur/mengatur melalui orang-orang yang beriman', 'ا+ل', 'Alif+Lam', 'Kombinasi');
               i += 2;
@@ -491,36 +564,45 @@
               addPart(`untuk diatur/mengatur demi ${k.toLowerCase()}`, 'ا+'+next, 'Alif+Khas', 'Kombinasi');
               i += 2;
             } else if (next && KOD_JAWI[next]) {
+              // Alif tengah + konsonan biasa
               let k = KOD_JAWI[next];
               addPart(`untuk diatur/mengatur berlandaskan ${k.toLowerCase()}`, 'ا', 'Alif Tengah', 'Kombinasi');
-              i += 2;
+              i += 2; // Skip konsonan tersebut
             } else {
               addPart('aturan', 'ا', 'Aturan', 'Biasa');
               i++;
             }
-          } else {
+          } 
+          // Hujung Perkataan
+          else {
             addPart('dengan adanya aturan', 'ا', 'Alif Hujung', 'Posisi');
             i++;
           }
           continue;
         }
 
-        // 3. YA RULES
-        if (char === 'ي') {
-           addPart('tanda-tanda kejayaan', 'ي', 'Tanda-tanda kejayaan', 'Biasa');
-           i++;
-           continue;
+        // --- RA (ر) ---
+        // Ra tunggal hanya jika TIADA gabungan Ra+Alif atau Ra+Ya (sudah diproses di atas)
+        if (char === 'ر') {
+          if (i === 0) {
+            addPart('keyakinan', 'ر', 'Keyakinan', 'Posisi');
+          } else {
+            addPart('yang diyakini', 'ر', 'Yang diyakini', 'Posisi');
+          }
+          i++;
+          continue;
         }
 
-        // 4. NUN RULES
+        // --- NUN (ن) ---
         if (char === 'ن') {
-          if (next === 'ا') {
+          if (next === 'ا') { // Sudah diproses Ra+Alif, ni Nun+Alif
             addPart('pembeza dengan adanya aturan', 'ن+ا', 'Nun+Alif', 'Kombinasi');
             i += 2;
           } else if (next === 'و') {
             addPart('pembeza yang jelas', 'ن+و', 'Nun+Wau', 'Kombinasi');
             i += 2;
           } else if (next === 'ي') {
+            // Nun + Ya (bukan Nia kerana Nia dah diproses atas)
             addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan', 'ن+ي', 'Nun+Ya', 'Kombinasi');
             i += 2;
           } else if (i === len - 1) {
@@ -533,22 +615,7 @@
           continue;
         }
 
-        // 5. RA RULES
-        if (char === 'ر') {
-          if (next === 'ا') {
-             addPart('keyakinan', 'ر', 'Keyakinan', 'Posisi');
-             i++;
-          } else if (i === 0) {
-            addPart('keyakinan', 'ر', 'Keyakinan', 'Posisi');
-            i++;
-          } else {
-            addPart('yang diyakini', 'ر', 'Yang diyakini', 'Posisi');
-            i++;
-          }
-          continue;
-        }
-
-        // 6. HA RULES
+        // --- HA (ه) ---
         if (char === 'ه') {
           if (i === len - 1) {
             addPart('terikat dengan adanya jemaah', 'ه', 'Terikat jemaah', 'Posisi');
@@ -559,18 +626,21 @@
           continue;
         }
 
-        // 7. DEFAULT CONSONANT & HURUF+YA
+        // --- YA (ي) ---
+        if (char === 'ي') {
+           addPart('tanda-tanda kejayaan', 'ي', 'Tanda-tanda kejayaan', 'Biasa');
+           i++;
+           continue;
+        }
+
+        // --- KONSONAN LAIN ---
         if (KOD_JAWI[char]) {
-          if (next === 'ي' && (i === len - 2)) {
-            let k = KOD_JAWI[char];
-            addPart(`dikuasai oleh ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi');
-            i += 2;
-          } else {
-            addPart(KOD_JAWI[char].toLowerCase(), char, KOD_JAWI[char], 'Biasa');
-            i++;
-          }
+          addPart(KOD_JAWI[char].toLowerCase(), char, KOD_JAWI[char], 'Biasa');
+          i++;
           continue;
         }
+
+        // Unknown char
         i++;
       }
 
