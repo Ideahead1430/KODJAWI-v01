@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Suku Kata Tertutup)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Kecerdasan Suku Kata)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -170,7 +170,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Suku Kata Tertutup & e Pepet</p>
+        <p class="text-gray-400">Fasa 1: Kecerdasan Analisis Suku Kata</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -188,7 +188,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: kenduri, cuti, iman..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: zalim, kenduri, malam..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -318,17 +318,15 @@
       "rahsia": "رحسيا", "redha": "رضا", "roh": "روح", "riya": "ريا",
       "saksi": "ساکسي", "solat": "صلاة", "syukur": "شکر", "taat": "طاعت",
       "taubat": "توبة", "akhir": "اخير", "awal": "اول",
-      "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري"
+      "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم"
     };
     
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
     const CONS_CLUSTER = { 'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' };
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
 
-    // Helper: Check if char is a generic consonant
+    // Helper
     const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','و','لا','ء'].includes(c);
-    // Helper: Check if char acts as a Vowel in C+V combination
-    const isVokalChar = (c) => ['و', 'ي', 'ا'].includes(c);
 
     // ================= STATE =================
     let historyData = [];
@@ -447,14 +445,24 @@
         parts.push(text);
         breakdown.push({ huruf: h, kod: k, type: t });
       };
+      
+      // Helper: Check if next sequence is Lam + Ya + Konsonan (e.g., Lim)
+      // This helper is crucial for Zalim vs Malam logic
+      const isLamYaKonsPattern = (idx) => {
+          // Check if word[idx] is Lam, followed by Ya, followed by Konsonan
+          let c1 = word[idx];
+          let c2 = word[idx+1];
+          let c3 = word[idx+2];
+          return (c1 === 'ل' && c2 === 'ي' && isKonsonan(c3));
+      };
 
       while (i < len) {
         let char = word[i];
         let next = word[i + 1] || '';
         let nextNext = word[i + 2] || '';
-        let prev = word[i - 1] || '';
+        let nextNextNext = word[i + 3] || ''; // Look 3 ahead for Zalim case
 
-        // 1. POLA KHAS 3 HURUF
+        // 1. POLA KHAS 3 HURUF (Priority Highest)
         if (char === 'ن' && next === 'ي' && nextNext === 'ا') {
           addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas');
           i += 3; continue;
@@ -468,6 +476,8 @@
           addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas');
           i += 3; continue;
         }
+        
+        // Pola C + Y + C (Suku kata tertutup)
         if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
            let k1 = KOD_JAWI[char];
            let k3 = KOD_JAWI[nextNext];
@@ -475,7 +485,7 @@
            i += 3; continue;
         }
 
-        // 2. GABUNGAN 2 HURUF KHAS & SUKU KATA
+        // 2. GABUNGAN 2 HURUF KHAS
         
         // LA
         if (char === 'ل' && next === 'ا') {
@@ -493,32 +503,49 @@
           i += 2; continue;
         }
 
-        // LOGIC BARU: KOMBINASI SUKU KATA
-        
-        // Konsonan + Wau (C + u) -> ... yang jelas
+        // 3. KOMBINASI SUKU KATA DASAR
+
+        // Konsonan + Wau (C + u)
         if (isKonsonan(char) && next === 'و') {
            let k = KOD_JAWI[char];
            addPart(`${k.toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi');
            i += 2; continue;
         }
         
-        // Konsonan + Ya (C + i) di hujung -> ... dikuasai oleh ...
+        // Konsonan + Ya (C + i) di hujung
         if (isKonsonan(char) && next === 'ي' && (i === len - 2)) {
              let k = KOD_JAWI[char];
              addPart(`dikuasai oleh ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi');
              i += 2; continue;
         }
 
-        // Konsonan + Alif (C + a) -> ... dengan adanya aturan
-        if (isKonsonan(char) && next === 'ا' && (!nextNext || !isKonsonan(nextNext))) {
-           let k = KOD_JAWI[char];
-           addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
-           i += 2; continue;
+        // Konsonan + Alif (C + a) - "Zalim vs Malam" Logic
+        if (isKonsonan(char) && next === 'ا') {
+           // LOGIC:
+           // If Alif is followed by Lam+Ya+Kons (Zalim -> Lim), Alif pairs with current char.
+           // If Alif is followed by Lam+Kons (Malam -> Lam), Alif pairs with Lam (handled by Alif logic later).
+           // We only grab C+A here if Alif is NOT needed by the next special pattern.
+           
+           let grabAlif = false;
+           
+           // Case: Zalim (Thzo + Alif). NextNext is Lam. NextNextNext is Ya.
+           if (nextNext === 'ل' && nextNextNext === 'ي') {
+               grabAlif = true; 
+           }
+           
+           // Case: General C+A at start or end (Gali, Kaka)
+           if (i === 0 || !nextNext || !isKonsonan(nextNext)) {
+               grabAlif = true;
+           }
+           
+           if (grabAlif) {
+               let k = KOD_JAWI[char];
+               addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
+               i += 2; continue;
+           }
         }
-
-        // ** LOGIC BAHARU: KONSONAN + KONSONAN (Suku Kata Tertutup / e Pepet) **
-        // Contoh: Kenduri (Kaf + Nun -> Ken)
-        // Formula: [Kod C1] dengan adanya [Kod C2]
+        
+        // Konsonan + Konsonan (Suku Kata Tertutup / e Pepet) - "Kenduri" logic
         if (isKonsonan(char) && isKonsonan(next)) {
            let k1 = KOD_JAWI[char];
            let k2 = KOD_JAWI[next];
@@ -526,7 +553,7 @@
            i += 2; continue;
         }
 
-        // 3. PERATURAN ALIF (Yang tersisa)
+        // 4. PERATURAN ALIF (Yang tersisa - Interaksi Tengah)
         if (char === 'ا') {
           if (i === 0) {
             if (next === 'ي') {
@@ -541,11 +568,15 @@
             }
           } 
           else if (i < len - 1) {
+            // Check Zalim case again (safety)
             if (next === 'ل' && nextNext === 'ي') {
-               addPart('untuk diatur/mengatur melalui orang-orang yang beriman yang ada tanda-tanda kejayaan', 'ا+ل+ي', 'Alif+Lam+Ya', 'Kombinasi');
-               i += 3; continue;
+               // This case implies Thzo+Alif didn't catch it, but we still shouldn't bind Alif+Lam if Lam+Ya+Kons is waiting.
+               // Treat Alif as single? No, this shouldn't be reached if logic above is correct.
+               // Just in case, skip Alif Tengah rule if Lim pattern detected.
+               addPart('aturan', 'ا', 'Aturan', 'Biasa');
+               i++; continue;
             }
-            
+
             if (next === 'ل') {
               addPart('untuk diatur/mengatur melalui orang-orang yang beriman', 'ا+ل', 'Alif+Lam', 'Kombinasi');
               i += 2;
@@ -569,7 +600,7 @@
           continue;
         }
 
-        // 4. HURUF BIASA
+        // 5. HURUF BIASA
         if (char === 'ر') {
           if (i === 0) { addPart('keyakinan', 'ر', 'Keyakinan', 'Posisi'); } 
           else { addPart('yang diyakini', 'ر', 'Yang diyakini', 'Posisi'); }
