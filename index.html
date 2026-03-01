@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Kecerdasan Suku Kata)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Stabil)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -77,14 +77,14 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      padding: 0.875rem 1.75rem;
+      padding: 0.6rem 1.2rem;
       font-weight: 600;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
       border: none;
       font-family: inherit;
-      font-size: 1rem;
+      font-size: 0.875rem;
     }
 
     .btn-primary {
@@ -93,7 +93,14 @@
       box-shadow: 0 4px 14px rgba(229, 167, 64, 0.25);
     }
 
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(229, 167, 64, 0.4); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(229, 167, 64, 0.4); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
     .tag {
       display: inline-flex;
@@ -115,6 +122,7 @@
     }
     .status-local { background: rgba(96, 165, 250, 0.15); color: var(--info); }
     .status-api { background: rgba(74, 222, 128, 0.15); color: var(--success); }
+    .status-locked { background: rgba(229, 167, 64, 0.2); color: var(--accent); border: 1px solid var(--accent); }
 
     .result-box {
       background: var(--bg-elevated);
@@ -164,20 +172,18 @@
   <div class="flex-grow">
     <div class="max-w-6xl mx-auto px-4 py-8">
       
-      <!-- Header with Logo -->
       <header class="text-center mb-10">
         <div class="mb-6">
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Kecerdasan Analisis Suku Kata</p>
+        <p class="text-gray-400">Fasa 1: Sistem Cache & Stabil</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
         
         <div class="md:col-span-2 space-y-6">
           
-          <!-- Input Card -->
           <div class="card">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold">Input Teks</h2>
@@ -188,7 +194,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: zalim, kenduri, malam..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: iman, zalim, kenduri..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -196,8 +202,18 @@
                <span>Paparan Jawi</span>
                <span id="engineUsed">Sumber: Enjin Dalaman</span>
             </div>
-            <div id="previewJawi" class="input-main font-jawi text-2xl min-h-60px flex items-center justify-end border-dashed border-gray-600">
-              <span class="text-gray-600" style="direction: ltr; font-family: 'IBM Plex Sans'; font-size: 0.9rem;">Sila taip...</span>
+            
+            <!-- Preview Jawi & Action Buttons -->
+            <div class="mb-4 p-4 bg-black/20 rounded-lg border border-gray-700">
+                <div id="previewJawi" class="font-jawi text-2xl min-h-60px flex items-center justify-end mb-3">
+                  <span class="text-gray-600" style="direction: ltr; font-family: 'IBM Plex Sans'; font-size: 0.9rem;">Sila taip...</span>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button id="btnRegenerate" class="btn btn-outline text-xs" onclick="regenerateJawi()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                        Jana Semula Ejaan
+                    </button>
+                </div>
             </div>
 
             <div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-700">
@@ -212,7 +228,6 @@
             </div>
           </div>
 
-          <!-- Output Card -->
           <div class="card">
             <h2 class="text-lg font-semibold mb-3">Hasil Kod</h2>
             <div id="resultContainer" class="result-box">
@@ -226,10 +241,8 @@
 
         </div>
 
-        <!-- Sidebar -->
         <div class="space-y-6">
           
-          <!-- History -->
           <div class="card">
             <div class="flex justify-between items-center mb-3">
               <h3 class="font-semibold">Sejarah</h3>
@@ -240,7 +253,6 @@
             </div>
           </div>
 
-          <!-- Kod Table -->
           <div class="card">
             <h3 class="font-semibold mb-3">Jadual Rujukan</h3>
             <input type="text" class="input-main text-xs mb-3 py-2" placeholder="Cari kod..." oninput="filterTable(this.value)">
@@ -259,7 +271,6 @@
     </div>
   </div>
 
-  <!-- Footer Section -->
   <footer class="bg-black/20 border-t border-gray-800 mt-12 py-8">
     <div class="max-w-6xl mx-auto px-4">
       <div class="grid md:grid-cols-2 gap-8 text-sm text-gray-400">
@@ -309,7 +320,7 @@
 
     const NEGATIVE_WORDS = ['munafik', 'haram', 'zalim', 'kafir', 'fasik', 'keji', 'jadah', 'sombong'];
     
-    // Kamus Khas
+    // Kamus Khas & Cache
     const KAMUS_KHAS = {
       "ibrahim": "ابراهيم", "ibnu": "ابن", "imran": "عمران", "iman": "ايمان",
       "kitab": "كتاب", "ilmu": "علم", "waktu": "وقتو", "huruf": "حروف",
@@ -320,18 +331,21 @@
       "taubat": "توبة", "akhir": "اخير", "awal": "اول",
       "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم"
     };
+
+    // SESSION CACHE: Stores results from API to prevent re-fetching or falling back to local incorrectly
+    window.jawiCache = {};
     
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
     const CONS_CLUSTER = { 'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' };
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
 
-    // Helper
     const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','و','لا','ء'].includes(c);
 
     // ================= STATE =================
     let historyData = [];
     let debounceTimer = null;
     let currentJawiResult = '';
+    let currentSource = 'none';
 
     // ================= INISIALISASI =================
     document.addEventListener('DOMContentLoaded', () => {
@@ -346,25 +360,40 @@
       window.elApiStatus = document.getElementById('apiStatus');
       window.elLoading = document.getElementById('loadingSpinner');
       window.elEngineInfo = document.getElementById('engineUsed');
+      window.elBtnRegenerate = document.getElementById('btnRegenerate');
       
       renderKodTable('');
       loadHistory();
     });
 
     // ================= LOGIC TRANSLITERASI =================
-    async function getJawiText(rumiText) {
+    async function getJawiText(rumiText, forceRefresh = false) {
       const lowerRumi = rumiText.toLowerCase();
+      
+      // 1. Check Kamus Khas Manual
       if (KAMUS_KHAS[lowerRumi]) {
-        updateApiStatus('local');
-        return KAMUS_KHAS[lowerRumi];
+        updateApiStatus('local'); 
+        return { text: KAMUS_KHAS[lowerRumi], source: 'local' };
       }
+
+      // 2. Check Cache (Lock Mechanism)
+      if (!forceRefresh && window.jawiCache[lowerRumi]) {
+        let cached = window.jawiCache[lowerRumi];
+        updateApiStatus('locked', 'Cache (Dikunci)');
+        return { text: cached, source: 'cache' };
+      }
+
+      // 3. Try API
       const apiResult = await tryApiFetch(rumiText);
       if (apiResult) {
+        window.jawiCache[lowerRumi] = apiResult; // Save to cache
         updateApiStatus('api');
-        return apiResult;
+        return { text: apiResult, source: 'api' };
       }
+
+      // 4. Fallback Local
       updateApiStatus('local');
-      return localTransliterate(rumiText);
+      return { text: localTransliterate(rumiText), source: 'local' };
     }
 
     async function tryApiFetch(text) {
@@ -416,20 +445,26 @@
       }).join(' ');
     }
 
-    function updateApiStatus(status) {
+    function updateApiStatus(status, customText = null) {
       if (!elApiStatus) return;
+      elApiStatus.className = 'status-pill';
+      
       if (status === 'api') {
-        elApiStatus.className = 'status-pill status-api';
+        elApiStatus.classList.add('status-api');
         elApiStatus.textContent = 'API Muip';
         if(elEngineInfo) elEngineInfo.textContent = "Sumber: API MUIP";
+      } else if (status === 'locked') {
+        elApiStatus.classList.add('status-locked');
+        elApiStatus.textContent = customText || 'Dikunci';
+        if(elEngineInfo) elEngineInfo.textContent = `Sumber: ${customText || 'Cache'}`;
       } else {
-        elApiStatus.className = 'status-pill status-local';
+        elApiStatus.classList.add('status-local');
         elApiStatus.textContent = 'Engine Lokal';
         if(elEngineInfo) elEngineInfo.textContent = "Sumber: Enjin Dalaman";
       }
     }
 
-    // ================= LOGIC PENGKODAN (JAWI -> KOD) =================
+    // ================= LOGIC PENGKODAN =================
     function kodkanWord(word, isNeg) {
       let parts = [];
       let breakdown = [];
@@ -445,24 +480,14 @@
         parts.push(text);
         breakdown.push({ huruf: h, kod: k, type: t });
       };
-      
-      // Helper: Check if next sequence is Lam + Ya + Konsonan (e.g., Lim)
-      // This helper is crucial for Zalim vs Malam logic
-      const isLamYaKonsPattern = (idx) => {
-          // Check if word[idx] is Lam, followed by Ya, followed by Konsonan
-          let c1 = word[idx];
-          let c2 = word[idx+1];
-          let c3 = word[idx+2];
-          return (c1 === 'ل' && c2 === 'ي' && isKonsonan(c3));
-      };
 
       while (i < len) {
         let char = word[i];
         let next = word[i + 1] || '';
         let nextNext = word[i + 2] || '';
-        let nextNextNext = word[i + 3] || ''; // Look 3 ahead for Zalim case
+        let nextNextNext = word[i + 3] || '';
 
-        // 1. POLA KHAS 3 HURUF (Priority Highest)
+        // 1. POLA KHAS 3 HURUF
         if (char === 'ن' && next === 'ي' && nextNext === 'ا') {
           addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas');
           i += 3; continue;
@@ -476,8 +501,6 @@
           addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas');
           i += 3; continue;
         }
-        
-        // Pola C + Y + C (Suku kata tertutup)
         if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
            let k1 = KOD_JAWI[char];
            let k3 = KOD_JAWI[nextNext];
@@ -485,9 +508,7 @@
            i += 3; continue;
         }
 
-        // 2. GABUNGAN 2 HURUF KHAS
-        
-        // LA
+        // 2. GABUNGAN 2 HURUF
         if (char === 'ل' && next === 'ا') {
           addPart('cerita-cerita', 'لا', 'Cerita-cerita', 'Pola Khas');
           if (nextNext && KOD_JAWI[nextNext]) {
@@ -496,44 +517,30 @@
           } else { i += 2; }
           continue;
         }
-        
-        // RI
         if (char === 'ر' && next === 'ي') {
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
           i += 2; continue;
         }
 
-        // 3. KOMBINASI SUKU KATA DASAR
+        // 3. SUKU KATA DASAR
 
-        // Konsonan + Wau (C + u)
         if (isKonsonan(char) && next === 'و') {
            let k = KOD_JAWI[char];
            addPart(`${k.toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi');
            i += 2; continue;
         }
         
-        // Konsonan + Ya (C + i) di hujung
         if (isKonsonan(char) && next === 'ي' && (i === len - 2)) {
              let k = KOD_JAWI[char];
              addPart(`dikuasai oleh ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi');
              i += 2; continue;
         }
 
-        // Konsonan + Alif (C + a) - "Zalim vs Malam" Logic
         if (isKonsonan(char) && next === 'ا') {
-           // LOGIC:
-           // If Alif is followed by Lam+Ya+Kons (Zalim -> Lim), Alif pairs with current char.
-           // If Alif is followed by Lam+Kons (Malam -> Lam), Alif pairs with Lam (handled by Alif logic later).
-           // We only grab C+A here if Alif is NOT needed by the next special pattern.
-           
            let grabAlif = false;
-           
-           // Case: Zalim (Thzo + Alif). NextNext is Lam. NextNextNext is Ya.
            if (nextNext === 'ل' && nextNextNext === 'ي') {
                grabAlif = true; 
            }
-           
-           // Case: General C+A at start or end (Gali, Kaka)
            if (i === 0 || !nextNext || !isKonsonan(nextNext)) {
                grabAlif = true;
            }
@@ -545,7 +552,6 @@
            }
         }
         
-        // Konsonan + Konsonan (Suku Kata Tertutup / e Pepet) - "Kenduri" logic
         if (isKonsonan(char) && isKonsonan(next)) {
            let k1 = KOD_JAWI[char];
            let k2 = KOD_JAWI[next];
@@ -553,7 +559,7 @@
            i += 2; continue;
         }
 
-        // 4. PERATURAN ALIF (Yang tersisa - Interaksi Tengah)
+        // 4. ALIF RULES
         if (char === 'ا') {
           if (i === 0) {
             if (next === 'ي') {
@@ -568,11 +574,7 @@
             }
           } 
           else if (i < len - 1) {
-            // Check Zalim case again (safety)
             if (next === 'ل' && nextNext === 'ي') {
-               // This case implies Thzo+Alif didn't catch it, but we still shouldn't bind Alif+Lam if Lam+Ya+Kons is waiting.
-               // Treat Alif as single? No, this shouldn't be reached if logic above is correct.
-               // Just in case, skip Alif Tengah rule if Lim pattern detected.
                addPart('aturan', 'ا', 'Aturan', 'Biasa');
                i++; continue;
             }
@@ -653,11 +655,34 @@
       elLoading.classList.remove('hidden');
       elPreviewJawi.style.opacity = 0.5;
       debounceTimer = setTimeout(async () => {
-        currentJawiResult = await getJawiText(val);
+        // NOT FORCE: Uses cache if available
+        const result = await getJawiText(val); 
+        currentJawiResult = result.text;
+        currentSource = result.source;
         elPreviewJawi.textContent = currentJawiResult;
         elPreviewJawi.style.opacity = 1;
         elLoading.classList.add('hidden');
       }, 300);
+    }
+
+    async function regenerateJawi() {
+        const val = elInputRumi.value;
+        if(!val) return;
+        
+        elBtnRegenerate.disabled = true;
+        elBtnRegenerate.innerHTML = `<div class="spinner" style="width:12px;height:12px;border-width:1px;"></div> Memuat...`;
+        
+        // FORCE REFRESH: Clears cache and retries API
+        const lowerRumi = val.toLowerCase();
+        delete window.jawiCache[lowerRumi];
+        
+        const result = await getJawiText(val, true);
+        currentJawiResult = result.text;
+        currentSource = result.source;
+        elPreviewJawi.textContent = currentJawiResult;
+        
+        elBtnRegenerate.disabled = false;
+        elBtnRegenerate.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg> Jana Semula Ejaan`;
     }
 
     function processText() {
@@ -680,7 +705,6 @@
     // ================= UI & UTILS =================
     function renderOutput(text, breakdown, isNeg) {
       text = text.charAt(0).toUpperCase() + text.slice(1);
-      
       elResult.innerHTML = `<p class="text-lg leading-relaxed font-medium">${text}</p>`;
       elStatus.classList.remove('hidden');
       elStatus.textContent = isNeg ? 'Negatif' : 'Positif';
