@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Awalan Khas)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Suku Kata Tertutup)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -170,7 +170,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Pola Awalan Khas & Suku Kata</p>
+        <p class="text-gray-400">Fasa 1: Suku Kata Tertutup & e Pepet</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -188,7 +188,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: iman, ibrahim, cuti..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: kenduri, cuti, iman..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -318,14 +318,17 @@
       "rahsia": "رحسيا", "redha": "رضا", "roh": "روح", "riya": "ريا",
       "saksi": "ساکسي", "solat": "صلاة", "syukur": "شکر", "taat": "طاعت",
       "taubat": "توبة", "akhir": "اخير", "awal": "اول",
-      "gali": "ڬالي", "cuti": "چوتي"
+      "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري"
     };
     
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
     const CONS_CLUSTER = { 'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' };
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
 
+    // Helper: Check if char is a generic consonant
     const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','و','لا','ء'].includes(c);
+    // Helper: Check if char acts as a Vowel in C+V combination
+    const isVokalChar = (c) => ['و', 'ي', 'ا'].includes(c);
 
     // ================= STATE =================
     let historyData = [];
@@ -435,9 +438,6 @@
       let i = 0;
       let len = word.length;
       
-      // LOGIC BARU: Menentukan Prefix
-      // Jika perkataan bermula dengan Alif + Ya (اي), GUGURKAN "Punyai".
-      // Pengecualian ini menjadikan ayat bermula dengan "Dikuasai..."
       let prefix = isNeg ? 'Tiada punyai ' : 'Punyai ';
       if (word.startsWith('اي')) {
           prefix = ''; 
@@ -475,7 +475,9 @@
            i += 3; continue;
         }
 
-        // 2. GABUNGAN 2 HURUF
+        // 2. GABUNGAN 2 HURUF KHAS & SUKU KATA
+        
+        // LA
         if (char === 'ل' && next === 'ا') {
           addPart('cerita-cerita', 'لا', 'Cerita-cerita', 'Pola Khas');
           if (nextNext && KOD_JAWI[nextNext]) {
@@ -484,33 +486,50 @@
           } else { i += 2; }
           continue;
         }
+        
+        // RI
         if (char === 'ر' && next === 'ي') {
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
           i += 2; continue;
         }
+
+        // LOGIC BARU: KOMBINASI SUKU KATA
         
-        // LOGIK BARU: KOMBINASI SUKU KATA
+        // Konsonan + Wau (C + u) -> ... yang jelas
         if (isKonsonan(char) && next === 'و') {
            let k = KOD_JAWI[char];
            addPart(`${k.toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi');
            i += 2; continue;
         }
-        if (isKonsonan(char) && next === 'ا' && (!nextNext || !isKonsonan(nextNext))) {
-           let k = KOD_JAWI[char];
-           addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
-           i += 2; continue;
-        }
+        
+        // Konsonan + Ya (C + i) di hujung -> ... dikuasai oleh ...
         if (isKonsonan(char) && next === 'ي' && (i === len - 2)) {
              let k = KOD_JAWI[char];
              addPart(`dikuasai oleh ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi');
              i += 2; continue;
         }
 
-        // 3. PERATURAN ALIF
+        // Konsonan + Alif (C + a) -> ... dengan adanya aturan
+        if (isKonsonan(char) && next === 'ا' && (!nextNext || !isKonsonan(nextNext))) {
+           let k = KOD_JAWI[char];
+           addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
+           i += 2; continue;
+        }
+
+        // ** LOGIC BAHARU: KONSONAN + KONSONAN (Suku Kata Tertutup / e Pepet) **
+        // Contoh: Kenduri (Kaf + Nun -> Ken)
+        // Formula: [Kod C1] dengan adanya [Kod C2]
+        if (isKonsonan(char) && isKonsonan(next)) {
+           let k1 = KOD_JAWI[char];
+           let k2 = KOD_JAWI[next];
+           addPart(`${k1.toLowerCase()} dengan adanya ${k2.toLowerCase()}`, char+next, 'Konsonan+Konsonan', 'Kombinasi');
+           i += 2; continue;
+        }
+
+        // 3. PERATURAN ALIF (Yang tersisa)
         if (char === 'ا') {
           if (i === 0) {
             if (next === 'ي') {
-              // Peraturan Iman: Awal Alif + Ya
               addPart('dikuasai oleh aturan yang ada tanda-tanda kejayaan', 'اي', 'Alif+Ya Awal', 'Kombinasi');
               i += 2;
             } else if (next && KOD_JAWI[next]) {
@@ -629,7 +648,6 @@
 
     // ================= UI & UTILS =================
     function renderOutput(text, breakdown, isNeg) {
-      // Capitalize first letter
       text = text.charAt(0).toUpperCase() + text.slice(1);
       
       elResult.innerHTML = `<p class="text-lg leading-relaxed font-medium">${text}</p>`;
