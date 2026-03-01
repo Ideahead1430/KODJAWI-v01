@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Suku Kata)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Awalan Khas)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -170,7 +170,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Integriti Ejaan & Logik Suku Kata</p>
+        <p class="text-gray-400">Fasa 1: Pola Awalan Khas & Suku Kata</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -188,7 +188,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: cuti, gali, ibrahim..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: iman, ibrahim, cuti..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -325,7 +325,6 @@
     const CONS_CLUSTER = { 'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' };
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
 
-    // Helper: Check if char is a generic consonant
     const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','و','لا','ء'].includes(c);
 
     // ================= STATE =================
@@ -435,7 +434,14 @@
       let breakdown = [];
       let i = 0;
       let len = word.length;
+      
+      // LOGIC BARU: Menentukan Prefix
+      // Jika perkataan bermula dengan Alif + Ya (اي), GUGURKAN "Punyai".
+      // Pengecualian ini menjadikan ayat bermula dengan "Dikuasai..."
       let prefix = isNeg ? 'Tiada punyai ' : 'Punyai ';
+      if (word.startsWith('اي')) {
+          prefix = ''; 
+      }
 
       const addPart = (text, h, k, t) => {
         parts.push(text);
@@ -448,30 +454,20 @@
         let nextNext = word[i + 2] || '';
         let prev = word[i - 1] || '';
 
-        // ==========================================
-        // 1. POLA KHAS 3 HURUF (Priority Tinggi)
-        // ==========================================
-        
-        // Pola نيا
+        // 1. POLA KHAS 3 HURUF
         if (char === 'ن' && next === 'ي' && nextNext === 'ا') {
           addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas');
           i += 3; continue;
         }
-        
-        // Pola عاء
         if (char === 'ع' && next === 'ا' && nextNext === 'ء') {
            addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء', 'Pola Khas');
            i += 3; continue;
         }
-
-        // Pola ڽيا, قيا, زيا
         if ((char === 'ڽ' || char === 'ق' || char === 'ز') && next === 'ي' && nextNext === 'ا') {
           let k = KOD_JAWI[char];
           addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas');
           i += 3; continue;
         }
-        
-        // Pola C + ي + C (Suku kata 3 huruf di tengah/akhir)
         if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
            let k1 = KOD_JAWI[char];
            let k3 = KOD_JAWI[nextNext];
@@ -479,11 +475,7 @@
            i += 3; continue;
         }
 
-        // ==========================================
-        // 2. GABUNGAN 2 HURUF (SUku Kata & Istimewa)
-        // ==========================================
-
-        // Gabungan لا
+        // 2. GABUNGAN 2 HURUF
         if (char === 'ل' && next === 'ا') {
           addPart('cerita-cerita', 'لا', 'Cerita-cerita', 'Pola Khas');
           if (nextNext && KOD_JAWI[nextNext]) {
@@ -492,47 +484,33 @@
           } else { i += 2; }
           continue;
         }
-
-        // Gabungan ري
         if (char === 'ر' && next === 'ي') {
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
           i += 2; continue;
         }
-
-        // --- LOGIK BARU: KOMBINASI SUKU KATA ---
         
-        // Konsonan + Wau (C + u) -> [Kod Konsonan] yang jelas
-        // Contoh: چو (Cu)
+        // LOGIK BARU: KOMBINASI SUKU KATA
         if (isKonsonan(char) && next === 'و') {
            let k = KOD_JAWI[char];
            addPart(`${k.toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi');
            i += 2; continue;
         }
-
-        // Konsonan + Alif (C + a) -> [Kod Konsonan] dengan adanya aturan
-        // SYARAT: Hanya jika Alif TIDAK diikuti oleh konsonan (supaya tidak ganggu 'Haram' atau 'Alif Tengah')
-        // Atau jika Alif di hujung.
         if (isKonsonan(char) && next === 'ا' && (!nextNext || !isKonsonan(nextNext))) {
            let k = KOD_JAWI[char];
            addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
            i += 2; continue;
         }
-
-        // Huruf + Ya di hujung (C + i)
-        // Contoh: تي (Ti)
         if (isKonsonan(char) && next === 'ي' && (i === len - 2)) {
              let k = KOD_JAWI[char];
              addPart(`dikuasai oleh ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi');
              i += 2; continue;
         }
 
-        // ==========================================
-        // 3. PERATURAN ALIF (Yang tersisa/berdiri sendiri)
-        // ==========================================
+        // 3. PERATURAN ALIF
         if (char === 'ا') {
-          // Awal Perkataan
           if (i === 0) {
             if (next === 'ي') {
+              // Peraturan Iman: Awal Alif + Ya
               addPart('dikuasai oleh aturan yang ada tanda-tanda kejayaan', 'اي', 'Alif+Ya Awal', 'Kombinasi');
               i += 2;
             } else if (next && KOD_JAWI[next]) {
@@ -543,10 +521,7 @@
               i++;
             }
           } 
-          // Tengah Perkataan (Hanya jika tidak diproses sebagai C+Alif di atas)
-          // Ini berlaku jika Alif diikuti oleh Konsonan (Alif aktif)
           else if (i < len - 1) {
-            // Alif + Lam + Ya (Gali case) -> already handled? No, logic order matters.
             if (next === 'ل' && nextNext === 'ي') {
                addPart('untuk diatur/mengatur melalui orang-orang yang beriman yang ada tanda-tanda kejayaan', 'ا+ل+ي', 'Alif+Lam+Ya', 'Kombinasi');
                i += 3; continue;
@@ -568,7 +543,6 @@
               i++;
             }
           } 
-          // Hujung Perkataan
           else {
             addPart('dengan adanya aturan', 'ا', 'Alif Hujung', 'Posisi');
             i++;
@@ -576,65 +550,39 @@
           continue;
         }
 
-        // ==========================================
-        // 4. HURUF BIASA (Single Letter)
-        // ==========================================
-        
-        // Ra (jika bukan Ri/Ra combo)
+        // 4. HURUF BIASA
         if (char === 'ر') {
-          if (i === 0) {
-            addPart('keyakinan', 'ر', 'Keyakinan', 'Posisi');
-          } else {
-            addPart('yang diyakini', 'ر', 'Yang diyakini', 'Posisi');
-          }
-          i++;
-          continue;
+          if (i === 0) { addPart('keyakinan', 'ر', 'Keyakinan', 'Posisi'); } 
+          else { addPart('yang diyakini', 'ر', 'Yang diyakini', 'Posisi'); }
+          i++; continue;
         }
 
-        // Nun
         if (char === 'ن') {
-          if (i === len - 1) {
-            addPart('dengan adanya pembeza', 'ن', 'Nun Hujung', 'Posisi');
-          } else {
-            addPart('pembeza', 'ن', 'Pembeza', 'Biasa');
-          }
-          i++;
-          continue;
+          if (i === len - 1) { addPart('dengan adanya pembeza', 'ن', 'Nun Hujung', 'Posisi'); } 
+          else { addPart('pembeza', 'ن', 'Pembeza', 'Biasa'); }
+          i++; continue;
         }
 
-        // Ha
         if (char === 'ه') {
-          if (i === len - 1) {
-            addPart('terikat dengan adanya jemaah', 'ه', 'Terikat jemaah', 'Posisi');
-          } else {
-            addPart('jemaah', 'ه', 'Jemaah', 'Biasa');
-          }
-          i++;
-          continue;
+          if (i === len - 1) { addPart('terikat dengan adanya jemaah', 'ه', 'Terikat jemaah', 'Posisi'); } 
+          else { addPart('jemaah', 'ه', 'Jemaah', 'Biasa'); }
+          i++; continue;
         }
 
-        // Ya (jika bukan combo)
         if (char === 'ي') {
            addPart('tanda-tanda kejayaan', 'ي', 'Tanda-tanda kejayaan', 'Biasa');
-           i++;
-           continue;
+           i++; continue;
         }
         
-        // Wau (jika bukan combo)
         if (char === 'و') {
            addPart('jelas', 'و', 'Jelas', 'Biasa');
-           i++;
-           continue;
+           i++; continue;
         }
 
-        // Konsonan Lain
         if (KOD_JAWI[char]) {
           addPart(KOD_JAWI[char].toLowerCase(), char, KOD_JAWI[char], 'Biasa');
-          i++;
-          continue;
+          i++; continue;
         }
-
-        // Unknown
         i++;
       }
 
@@ -648,16 +596,12 @@
     async function handleRumiInput(e) {
       const val = e.target.value;
       clearTimeout(debounceTimer);
-      
       if (!val) {
         elPreviewJawi.innerHTML = "<span class=\"text-gray-600\" style=\"direction: ltr; font-family: 'IBM Plex Sans'; font-size: 0.9rem;\">Sila taip...</span>";
-        currentJawiResult = '';
-        return;
+        currentJawiResult = ''; return;
       }
-
       elLoading.classList.remove('hidden');
       elPreviewJawi.style.opacity = 0.5;
-
       debounceTimer = setTimeout(async () => {
         currentJawiResult = await getJawiText(val);
         elPreviewJawi.textContent = currentJawiResult;
@@ -669,32 +613,26 @@
     function processText() {
       const rumiInput = elInputRumi.value;
       const jawiText = currentJawiResult || localTransliterate(rumiInput);
-      
       if (!jawiText.trim()) return;
-
-      const isNeg = document.getElementById('checkNegative').checked || 
-                    NEGATIVE_WORDS.some(w => rumiInput.toLowerCase().includes(w));
-
+      const isNeg = document.getElementById('checkNegative').checked || NEGATIVE_WORDS.some(w => rumiInput.toLowerCase().includes(w));
       const words = jawiText.trim().split(/\s+/);
       let fullResult = [];
       let allBreakdown = [];
-
       words.forEach(w => {
         const res = kodkanWord(w, isNeg);
         fullResult.push(res.output);
         allBreakdown.push(...res.breakdown);
       });
-
       renderOutput(fullResult.join('. '), allBreakdown, isNeg);
       saveHistory(rumiInput, fullResult.join('. '));
     }
 
     // ================= UI & UTILS =================
     function renderOutput(text, breakdown, isNeg) {
+      // Capitalize first letter
       text = text.charAt(0).toUpperCase() + text.slice(1);
       
       elResult.innerHTML = `<p class="text-lg leading-relaxed font-medium">${text}</p>`;
-      
       elStatus.classList.remove('hidden');
       elStatus.textContent = isNeg ? 'Negatif' : 'Positif';
       elStatus.style.background = isNeg ? 'rgba(248, 113, 113, 0.15)' : 'var(--accent-dim)';
@@ -739,8 +677,7 @@
     function renderHistory() {
       if (!elHistory) return;
       if (!historyData.length) {
-        elHistory.innerHTML = '<p class="text-gray-600 italic text-xs">Tiada rekod</p>';
-        return;
+        elHistory.innerHTML = '<p class="text-gray-600 italic text-xs">Tiada rekod</p>'; return;
       }
       elHistory.innerHTML = historyData.map(h => `
         <div class="p-2 bg-black/20 rounded cursor-pointer hover:bg-black/40 transition mb-1" onclick="loadHist('${h.in}')">
@@ -758,7 +695,6 @@
       localStorage.removeItem('jawiHist');
       renderHistory();
     }
-
   </script>
 </body>
 </html>
