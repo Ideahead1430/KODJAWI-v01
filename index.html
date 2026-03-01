@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Stabil)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Pintar)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Sistem Cache & Stabil</p>
+        <p class="text-gray-400">Fasa 1: Analisis Suku Kata Pintar</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: iman, zalim, kenduri..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: mengaji, iman, zalim..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -203,7 +203,6 @@
                <span id="engineUsed">Sumber: Enjin Dalaman</span>
             </div>
             
-            <!-- Preview Jawi & Action Buttons -->
             <div class="mb-4 p-4 bg-black/20 rounded-lg border border-gray-700">
                 <div id="previewJawi" class="font-jawi text-2xl min-h-60px flex items-center justify-end mb-3">
                   <span class="text-gray-600" style="direction: ltr; font-family: 'IBM Plex Sans'; font-size: 0.9rem;">Sila taip...</span>
@@ -320,7 +319,6 @@
 
     const NEGATIVE_WORDS = ['munafik', 'haram', 'zalim', 'kafir', 'fasik', 'keji', 'jadah', 'sombong'];
     
-    // Kamus Khas & Cache
     const KAMUS_KHAS = {
       "ibrahim": "ابراهيم", "ibnu": "ابن", "imran": "عمران", "iman": "ايمان",
       "kitab": "كتاب", "ilmu": "علم", "waktu": "وقتو", "huruf": "حروف",
@@ -329,10 +327,10 @@
       "rahsia": "رحسيا", "redha": "رضا", "roh": "روح", "riya": "ريا",
       "saksi": "ساکسي", "solat": "صلاة", "syukur": "شکر", "taat": "طاعت",
       "taubat": "توبة", "akhir": "اخير", "awal": "اول",
-      "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم"
+      "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم",
+      "mengaji": "مڠاجي" // Tambah contoh untuk ujian
     };
 
-    // SESSION CACHE: Stores results from API to prevent re-fetching or falling back to local incorrectly
     window.jawiCache = {};
     
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
@@ -370,28 +368,24 @@
     async function getJawiText(rumiText, forceRefresh = false) {
       const lowerRumi = rumiText.toLowerCase();
       
-      // 1. Check Kamus Khas Manual
       if (KAMUS_KHAS[lowerRumi]) {
         updateApiStatus('local'); 
         return { text: KAMUS_KHAS[lowerRumi], source: 'local' };
       }
 
-      // 2. Check Cache (Lock Mechanism)
       if (!forceRefresh && window.jawiCache[lowerRumi]) {
         let cached = window.jawiCache[lowerRumi];
         updateApiStatus('locked', 'Cache (Dikunci)');
         return { text: cached, source: 'cache' };
       }
 
-      // 3. Try API
       const apiResult = await tryApiFetch(rumiText);
       if (apiResult) {
-        window.jawiCache[lowerRumi] = apiResult; // Save to cache
+        window.jawiCache[lowerRumi] = apiResult;
         updateApiStatus('api');
         return { text: apiResult, source: 'api' };
       }
 
-      // 4. Fallback Local
       updateApiStatus('local');
       return { text: localTransliterate(rumiText), source: 'local' };
     }
@@ -464,7 +458,7 @@
       }
     }
 
-    // ================= LOGIC PENGKODAN =================
+    // ================= LOGIC PENGKODAN (BAIKI) =================
     function kodkanWord(word, isNeg) {
       let parts = [];
       let breakdown = [];
@@ -487,7 +481,7 @@
         let nextNext = word[i + 2] || '';
         let nextNextNext = word[i + 3] || '';
 
-        // 1. POLA KHAS 3 HURUF
+        // 1. POLA KHAS 3 HURUF (Static)
         if (char === 'ن' && next === 'ي' && nextNext === 'ا') {
           addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas');
           i += 3; continue;
@@ -501,6 +495,8 @@
           addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas');
           i += 3; continue;
         }
+        
+        // Pola C + Y + C (Suku kata tertutup) - ZALIM CASE
         if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
            let k1 = KOD_JAWI[char];
            let k3 = KOD_JAWI[nextNext];
@@ -508,7 +504,9 @@
            i += 3; continue;
         }
 
-        // 2. GABUNGAN 2 HURUF
+        // 2. GABUNGAN 2 HURUF KHAS
+        
+        // LA
         if (char === 'ل' && next === 'ا') {
           addPart('cerita-cerita', 'لا', 'Cerita-cerita', 'Pola Khas');
           if (nextNext && KOD_JAWI[nextNext]) {
@@ -517,6 +515,8 @@
           } else { i += 2; }
           continue;
         }
+        
+        // RI
         if (char === 'ر' && next === 'ي') {
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
           i += 2; continue;
@@ -524,34 +524,66 @@
 
         // 3. SUKU KATA DASAR
 
+        // Konsonan + Wau (C + u)
         if (isKonsonan(char) && next === 'و') {
            let k = KOD_JAWI[char];
            addPart(`${k.toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi');
            i += 2; continue;
         }
         
+        // ** LOGIC BARU: KEUTAMAAN C + YA DI HUJUNG **
+        // Ini mesti datang SEBELUM Alif Tengah supaya Alif tidak 'curi' konsonan ini.
         if (isKonsonan(char) && next === 'ي' && (i === len - 2)) {
              let k = KOD_JAWI[char];
              addPart(`dikuasai oleh ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi');
              i += 2; continue;
         }
 
+        // Konsonan + Alif (C + a) - "Zalim vs Malam vs Mengaji" Logic
         if (isKonsonan(char) && next === 'ا') {
-           let grabAlif = false;
-           if (nextNext === 'ل' && nextNextNext === 'ي') {
-               grabAlif = true; 
-           }
-           if (i === 0 || !nextNext || !isKonsonan(nextNext)) {
-               grabAlif = true;
+           // Default: Jangan ambil Alif jika hujung perkataan (sudah ditangani oleh huruf lain sebelum ini)
+           // Atau jika tidak ada konsonan selepas alif (sudah ditangani)
+           
+           // Special Check: Jika huruf SELEPAS Alif (nextNext) adalah Konsonan, dan ia akan bergabung dengan Ya (nextNextNext)
+           // Contoh: Mengaji (Nga + Alif + Jim + Ya).
+           // Jika Jim akan bergabung dengan Ya, Alif jangan sentuh Jim.
+           // Kita perlu check lookahead untuk elakkan 'curi' konsonan.
+           
+           // Note: Oleh kerana kita sudah proses C+Ya di atas, jika (i+1) adalah konsonan dan (i+2) adalah Ya,
+           // bermakna kita sepatutnya sudah 'continue' di blok C+Ya tadi.
+           // Jadi, logik di sini selamat untuk kes biasa.
+           // Tapi untuk Mengaji: i=1 (Nga). next=Alif. nextNext=Jim. nextNextNext=Ya.
+           // Kita mahu Nga+Alif menjadi "teknologi pengurusan dengan adanya aturan".
+           // Tapi Jim+Ya mesti kekal.
+           
+           // Masalah: Jika kita laksanakan `Konsonan + Alif` di sini untuk Nga,
+           // kita akan skip index 2 (Alif) dan index 3 (Jim).
+           // Lalu index 4 (Ya) akan terlepas.
+           
+           // Solution: Jangan gabung Nga+Alif+Jim. Cuma Nga+Alif, dan biarkan Jim untuk seterusnya.
+           // Atau, check jika pattern selepas alif adalah C+Y (suku kata akhir).
+           
+           // Revised Logic for C + Alif:
+           // Jika selepas Alif ada C, dan C itu adalah sebahagian daripada pasangan C+Ya di hujung,
+           // maka jangan gabungkan C dengan Alif.
+           
+           if (isKonsonan(nextNext) && (nextNextNext === 'ي' && (i+3 === len - 1))) {
+               // Kes Mengaji: Nga + Alif (jangan sentuh Jim).
+               let k = KOD_JAWI[char];
+               addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
+               // Skip char dan Alif. Jim akan diproses pada iterasi seterusnya (oleh blok C+Ya).
+               i += 2; continue;
            }
            
-           if (grabAlif) {
+           // Kes Biasa (Malam, dll)
+           if (i === 0 || !nextNext || !isKonsonan(nextNext)) {
                let k = KOD_JAWI[char];
                addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
                i += 2; continue;
            }
         }
         
+        // Konsonan + Konsonan (Suku Kata Tertutup / e Pepet) - "Kenduri" logic
         if (isKonsonan(char) && isKonsonan(next)) {
            let k1 = KOD_JAWI[char];
            let k2 = KOD_JAWI[next];
@@ -559,7 +591,7 @@
            i += 2; continue;
         }
 
-        // 4. ALIF RULES
+        // 4. PERATURAN ALIF (Yang tersisa)
         if (char === 'ا') {
           if (i === 0) {
             if (next === 'ي') {
@@ -574,6 +606,7 @@
             }
           } 
           else if (i < len - 1) {
+            // Zalim Check: Alif + Lam + Ya + Mim (Zalim)
             if (next === 'ل' && nextNext === 'ي') {
                addPart('aturan', 'ا', 'Aturan', 'Biasa');
                i++; continue;
@@ -655,7 +688,6 @@
       elLoading.classList.remove('hidden');
       elPreviewJawi.style.opacity = 0.5;
       debounceTimer = setTimeout(async () => {
-        // NOT FORCE: Uses cache if available
         const result = await getJawiText(val); 
         currentJawiResult = result.text;
         currentSource = result.source;
@@ -672,7 +704,6 @@
         elBtnRegenerate.disabled = true;
         elBtnRegenerate.innerHTML = `<div class="spinner" style="width:12px;height:12px;border-width:1px;"></div> Memuat...`;
         
-        // FORCE REFRESH: Clears cache and retries API
         const lowerRumi = val.toLowerCase();
         delete window.jawiCache[lowerRumi];
         
