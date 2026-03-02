@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Fix Menguasai)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (DEMI & PRPM)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Menguasai Syntax Fix</p>
+        <p class="text-gray-400">Fasa 1: DEMI & Sumber DBP</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: lari dari, bagi, mati..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: akidah, lari dari..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -336,7 +336,8 @@
       "shamsul": "شمسول", "syamsul": "شمسول",
       "shah": "شاه",
       "lari": "لاري", "dari": "دري", "mati": "ماتي", "bagi": "باݢي", 
-      "urusan": "اوروسن"
+      "urusan": "اوروسن",
+      "akidah": "عقيده"
     };
 
     window.jawiCache = {};
@@ -391,11 +392,20 @@
         return { text: cached, source: 'cache' };
       }
 
+      // Source 1: ejawimakmur
       const apiResult = await tryApiFetch(rumiText);
       if (apiResult) {
         window.jawiCache[lowerRumi] = apiResult;
-        updateApiStatus('api');
+        updateApiStatus('api', 'API MUIP');
         return { text: apiResult, source: 'api' };
+      }
+      
+      // Source 2: DBP PRPM (Fallback)
+      const prpmResult = await tryPRPMFetch(rumiText);
+      if (prpmResult) {
+        window.jawiCache[lowerRumi] = prpmResult;
+        updateApiStatus('api', 'DBP PRPM');
+        return { text: prpmResult, source: 'prpm' };
       }
 
       updateApiStatus('local');
@@ -415,6 +425,30 @@
         }
         return null;
       } catch (e) { return null; }
+    }
+
+    async function tryPRPMFetch(text) {
+       try {
+         // Note: Direct fetch to DBP PRPM usually fails due to CORS.
+         // If running on a server/proxy, this might work. 
+         // For client-side only, this often fails, so we wrap in try/catch.
+         const url = `https://prpm.dbp.gov.my/carian1.php?keyword=${encodeURIComponent(text)}`;
+         const response = await fetch(url);
+         const html = await response.text();
+         // Simple scraping: look for 'font class="jawisan"'
+         // This is a basic regex scraper. Might need adjustment.
+         const regex = /<font[^>]*class=["']jawisan["'][^>]*>(.*?)<\/font>/i;
+         const match = html.match(regex);
+         if (match && match[1]) {
+           // Clean HTML entities if any
+           const jawi = match[1].replace(/<[^>]*>/g, '').trim();
+           if(jawi) return jawi;
+         }
+         return null;
+       } catch (e) { 
+         // console.warn("PRPM Fetch failed (CORS/Network)");
+         return null; 
+       }
     }
 
     function localTransliterate(text) {
@@ -455,22 +489,23 @@
       if (!elApiStatus) return;
       elApiStatus.className = 'status-pill';
       
+      let text = customText || 'Engine Lokal';
       if (status === 'api') {
         elApiStatus.classList.add('status-api');
-        elApiStatus.textContent = 'API Muip';
-        if(elEngineInfo) elEngineInfo.textContent = "Sumber: API MUIP";
+        elApiStatus.textContent = text;
+        if(elEngineInfo) elEngineInfo.textContent = `Sumber: ${text}`;
       } else if (status === 'locked') {
         elApiStatus.classList.add('status-locked');
-        elApiStatus.textContent = customText || 'Dikunci';
-        if(elEngineInfo) elEngineInfo.textContent = `Sumber: ${customText || 'Cache'}`;
+        elApiStatus.textContent = 'Dikunci';
+        if(elEngineInfo) elEngineInfo.textContent = "Sumber: Cache";
       } else {
         elApiStatus.classList.add('status-local');
-        elApiStatus.textContent = 'Engine Lokal';
+        elApiStatus.textContent = text;
         if(elEngineInfo) elEngineInfo.textContent = "Sumber: Enjin Dalaman";
       }
     }
 
-    // ================= LOGIC PENGKODAN (SMART CONNECTOR) =================
+    // ================= LOGIC PENGKODAN (CORE LOGIC) =================
     function kodkanWord(word, isNeg) {
       let parts = [];
       let breakdown = [];
@@ -487,9 +522,6 @@
         breakdown.push({ huruf: h, kod: k, type: t });
       };
       
-      // Helper: Returns the string for the subject of a "Menguasai" target
-      // Also handles the skipping logic internally by returning the skip count? 
-      // No, let's just return the string. We handle skip in the main loop.
       const getMenguasaiSubject = (targetChar, nextChar, nextNextChar) => {
          // Case: Ri (Ra + Ya)
          if (targetChar === 'ر' && nextChar === 'ي') {
@@ -512,7 +544,7 @@
         let nextNext = word[i + 2] || '';
         let nextNextNext = word[i + 3] || '';
 
-        // 1. POLA KHAS 3 HURUF (Static)
+        // 1. POLA KHAS 3 HURUF
         if (char === 'ن' && next === 'ي' && nextNext === 'ا') {
           addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas');
           i += 3; continue;
@@ -527,7 +559,7 @@
           i += 3; continue;
         }
         
-        // Dynamic 3-Letter Pattern (Shahril case: C + Y + C)
+        // Dynamic 3-Letter Pattern (Shahril case)
         if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
            let k1 = KOD_JAWI[char];
            let k3 = KOD_JAWI[nextNext];
@@ -542,25 +574,21 @@
         if (char === 'ل' && next === 'ا') {
           addPart('cerita-cerita', 'لا', 'Cerita-cerita', 'Pola Khas');
           
-          // ** FIX: Smart Menguasai Logic for La **
-          // Check if followed by Ri or C+Ya
-          // Note: `nextNext` is the char after Alif.
-          // `nextNextNext` is the char after that.
-          // Pattern: La + Alif + [Target] + [TargetNext]
-          
+          // Smart Menguasai Logic for La
           let subjectData = getMenguasaiSubject(nextNext, nextNextNext, word[i+4]);
           
           if (subjectData) {
              addPart(`${getMenguasaiConnector()} ${subjectData.text}`, 'لا+ي', 'Penghubung Menguasai', 'Kombinasi');
-             i += (2 + subjectData.skip); // Skip La + Alif + TargetLength
+             i += (2 + subjectData.skip); 
              continue;
           }
           
-          // Standard La continuation
           if (nextNext && KOD_JAWI[nextNext]) {
             addPart(`dengan adanya ${KOD_JAWI[nextNext].toLowerCase()}`, nextNext, KOD_JAWI[nextNext], 'Sambungan LA');
-            i += 3;
-          } else { i += 2; }
+            i += 1; 
+          }
+          
+          i += 2;
           continue;
         }
         
@@ -568,6 +596,15 @@
         if (char === 'ر' && next === 'ي') {
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
           i += 2; continue;
+        }
+        
+        // ** NEW: DEMI Rule for Nya/Qaf + Ya **
+        // If Nya or Qaf meets Ya, but NOT followed by Alif (since Nia/Qia handled above)
+        // We apply "DEMI [Kod]" logic.
+        if ((char === 'ڽ' || char === 'ق') && next === 'ي') {
+           let k = KOD_JAWI[char];
+           addPart(`DEMI ${k.toLowerCase()}`, char+'ي', 'Gabungan DEMI', 'Kombinasi');
+           i += 2; continue;
         }
 
         // 3. SUKU KATA DASAR
@@ -588,7 +625,6 @@
 
         // Konsonan + Alif
         if (isKonsonan(char) && next === 'ا') {
-           // Base Text
            let k = KOD_JAWI[char];
            let baseText = '';
            if (char === 'م') baseText = 'Pedoman untuk mengatur';
@@ -598,14 +634,12 @@
            
            addPart(baseText, char+'ا', 'Konsonan+Alif', 'Kombinasi');
            
-           // ** FIX: Smart Menguasai Logic for Konsonan+Alif **
-           // Lookahead: check if followed by Ri or C+Ya
-           // Pattern: C + Alif + [Target] + [TargetNext]
+           // Smart Menguasai Logic for Konsonan+Alif
            let subjectData = getMenguasaiSubject(nextNext, nextNextNext, word[i+4]);
            
            if (subjectData) {
               addPart(`${getMenguasaiConnector()} ${subjectData.text}`, 'ا+ي', 'Penghubung Menguasai', 'Kombinasi');
-              i += (2 + subjectData.skip); // Skip C+Alif + TargetLength
+              i += (2 + subjectData.skip);
               continue;
            }
            
@@ -613,7 +647,7 @@
            continue;
         }
         
-        // Konsonan + Konsonan (Prevent breaking Ri)
+        // Konsonan + Konsonan
         if (isKonsonan(char) && isKonsonan(next)) {
            let isNextSpecial = (next === 'ر' && nextNext === 'ي') || (next === 'ل' && nextNext === 'ا');
            if (!isNextSpecial) {
