@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Shim/Syin)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Keyakinan)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Fonetik SH/SY (Shim/Syin)</p>
+        <p class="text-gray-400">Fasa 1: Tatabahasa Keyakinan</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -305,9 +305,7 @@
       'ا': 'Aturan', 'ب': 'Dasar', 'ت': 'Sistem rangkaian', 'ث': 'Hubungan',
       'ج': 'Sumber', 'چ': 'Sumber dengan sifat', 'ح': 'Sifat', 'خ': 'Pentadbiran',
       'د': 'Hasil', 'ذ': 'Pengampunan', 'ر': 'Yakin', 'ز': 'Mentauhidkan aturan',
-      'س': 'Prinsip', 
-      'ش': 'Penegasan', // SHIM / SYIN - KOD TETAP
-      'ص': 'Sikap', 'ض': 'Pengurusan sumber tenaga',
+      'س': 'Prinsip', 'ش': 'Penegasan', 'ص': 'Sikap', 'ض': 'Pengurusan sumber tenaga',
       'ط': 'Kaedah pengurusan', 'ظ': 'Imbas', 'ع': 'Strategi', 'غ': 'Teknologi',
       'ڠ': 'Teknologi pengurusan', 'ف': 'Kaedah pengurusan mentauhidkan dasar',
       'ڤ': 'Kaedah pengurusan mentauhidkan hasil', 'ق': 'Mentauhidkan dasar',
@@ -321,7 +319,7 @@
 
     const NEGATIVE_WORDS = ['munafik', 'haram', 'zalim', 'kafir', 'fasik', 'keji', 'jadah', 'sombong'];
     
-    // KAMUS KHAS (Termasuk pasangan SH/SY)
+    // KAMUS KHAS
     const KAMUS_KHAS = {
       "ibrahim": "ابراهيم", "ibnu": "ابن", "imran": "عمران", "iman": "ايمان",
       "kitab": "كتاب", "ilmu": "علم", "waktu": "وقتو", "huruf": "حروف",
@@ -332,8 +330,8 @@
       "taubat": "توبة", "akhir": "اخير", "awal": "اول",
       "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم",
       "mengaji": "مڠاجي", "tuala": "توالا",
-      // Nama Khas SH/SY (Bunyi Shim/Syin 'ش')
-      "shahril": "شهريل", "syahril": "شهريل",
+      // SH / SY Names
+      "shahril": "شهريل", "syahril": "شهريل", 
       "shala": "شالا", "syala": "شالا",
       "sharifah": "شريفة", "syarifah": "شريفة",
       "shamsir": "شمسير", "syamsir": "شمسير",
@@ -345,12 +343,8 @@
     
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
     
-    // Cluster Konsonan
-    // 'sh' dan 'sy' KEDUANYA dipetakan ke 'ش' (Shim/Syin)
     const CONS_CLUSTER = { 
-      'ng':'ڠ', 'ny':'ڽ', 
-      'sy':'ش', // Standard
-      'sh':'ش', // Ditambah untuk nama-nama khas dan pinjaman
+      'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'sh':'ش',
       'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' 
     };
 
@@ -438,7 +432,6 @@
              else if (c === 'e') result += 'اي'; else result += 'او'; 
              i++; continue;
            }
-           // Cluster check (SH/SY included here)
            if (CONS_CLUSTER[c+next]) { result += CONS_CLUSTER[c+next]; i+=2; continue; }
            if (CONS_MAP[c]) {
              if (next === 'a') {
@@ -477,7 +470,7 @@
       }
     }
 
-    // ================= LOGIC PENGKODAN =================
+    // ================= LOGIC PENGKODAN (BAIKI KEYAKINAN) =================
     function kodkanWord(word, isNeg) {
       let parts = [];
       let breakdown = [];
@@ -514,10 +507,16 @@
           addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas');
           i += 3; continue;
         }
+        
+        // ** DYNAMIC 3-LETTER PATTERN (C + Y + C) - SHAPRIL CASE **
         if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
            let k1 = KOD_JAWI[char];
            let k3 = KOD_JAWI[nextNext];
-           addPart(`dikuasai oleh ${k1.toLowerCase()} yang ada tanda-tanda kejayaan serta ${k3.toLowerCase()}`, char+'ي'+nextNext, 'Pola 3 Huruf', 'Kombinasi');
+           
+           // PEMBETULAN: Jika huruf pertama adalah RA (ر), gunakan "Keyakinan"
+           let wordK1 = (char === 'ر') ? 'keyakinan' : k1.toLowerCase();
+           
+           addPart(`dikuasai oleh ${wordK1} yang ada tanda-tanda kejayaan serta ${k3.toLowerCase()}`, char+'ي'+nextNext, 'Pola 3 Huruf', 'Kombinasi');
            i += 3; continue;
         }
 
@@ -533,8 +532,9 @@
           continue;
         }
         
-        // RI
+        // RI (2 Huruf) - Standalone
         if (char === 'ر' && next === 'ي') {
+          // PEMBETULAN: Gunakan "keyakinan"
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
           i += 2; continue;
         }
