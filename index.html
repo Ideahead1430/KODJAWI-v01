@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Nama Khas)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Shim/Syin)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Ejaan Nama Khas & Shim</p>
+        <p class="text-gray-400">Fasa 1: Fonetik SH/SY (Shim/Syin)</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: shahril, tuala, iman..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: shahril, syarifah, tuala..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -305,7 +305,9 @@
       'ا': 'Aturan', 'ب': 'Dasar', 'ت': 'Sistem rangkaian', 'ث': 'Hubungan',
       'ج': 'Sumber', 'چ': 'Sumber dengan sifat', 'ح': 'Sifat', 'خ': 'Pentadbiran',
       'د': 'Hasil', 'ذ': 'Pengampunan', 'ر': 'Yakin', 'ز': 'Mentauhidkan aturan',
-      'س': 'Prinsip', 'ش': 'Penegasan', 'ص': 'Sikap', 'ض': 'Pengurusan sumber tenaga',
+      'س': 'Prinsip', 
+      'ش': 'Penegasan', // SHIM / SYIN - KOD TETAP
+      'ص': 'Sikap', 'ض': 'Pengurusan sumber tenaga',
       'ط': 'Kaedah pengurusan', 'ظ': 'Imbas', 'ع': 'Strategi', 'غ': 'Teknologi',
       'ڠ': 'Teknologi pengurusan', 'ف': 'Kaedah pengurusan mentauhidkan dasar',
       'ڤ': 'Kaedah pengurusan mentauhidkan hasil', 'ق': 'Mentauhidkan dasar',
@@ -319,7 +321,7 @@
 
     const NEGATIVE_WORDS = ['munafik', 'haram', 'zalim', 'kafir', 'fasik', 'keji', 'jadah', 'sombong'];
     
-    // KAMUS KHAS (Termasuk nama-nama yang gagal di ejawimakmur)
+    // KAMUS KHAS (Termasuk pasangan SH/SY)
     const KAMUS_KHAS = {
       "ibrahim": "ابراهيم", "ibnu": "ابن", "imran": "عمران", "iman": "ايمان",
       "kitab": "كتاب", "ilmu": "علم", "waktu": "وقتو", "huruf": "حروف",
@@ -330,22 +332,28 @@
       "taubat": "توبة", "akhir": "اخير", "awal": "اول",
       "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم",
       "mengaji": "مڠاجي", "tuala": "توالا",
-      // Tambahan Nama Khas SHAHRIL & Variasi
-      "shahril": "شهريل", 
-      "shah": "شاه",
-      "shamsir": "شمسير",
-      "syamsir": "شمسير",
-      "syamsul": "شمسول",
-      "sharifah": "شريفة",
-      "syarifah": "شريفة",
-      "syala": "شيلا"
+      // Nama Khas SH/SY (Bunyi Shim/Syin 'ش')
+      "shahril": "شهريل", "syahril": "شهريل",
+      "shala": "شالا", "syala": "شالا",
+      "sharifah": "شريفة", "syarifah": "شريفة",
+      "shamsir": "شمسير", "syamsir": "شمسير",
+      "shamsul": "شمسول", "syamsul": "شمسول",
+      "shah": "شاه"
     };
 
     window.jawiCache = {};
     
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
-    // 'sh' is NOT a cluster in standard mapping, handled manually or via dictionary
-    const CONS_CLUSTER = { 'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' };
+    
+    // Cluster Konsonan
+    // 'sh' dan 'sy' KEDUANYA dipetakan ke 'ش' (Shim/Syin)
+    const CONS_CLUSTER = { 
+      'ng':'ڠ', 'ny':'ڽ', 
+      'sy':'ش', // Standard
+      'sh':'ش', // Ditambah untuk nama-nama khas dan pinjaman
+      'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' 
+    };
+
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
 
     const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','و','لا','ء'].includes(c);
@@ -430,6 +438,7 @@
              else if (c === 'e') result += 'اي'; else result += 'او'; 
              i++; continue;
            }
+           // Cluster check (SH/SY included here)
            if (CONS_CLUSTER[c+next]) { result += CONS_CLUSTER[c+next]; i+=2; continue; }
            if (CONS_MAP[c]) {
              if (next === 'a') {
@@ -548,14 +557,12 @@
 
         // Konsonan + Alif
         if (isKonsonan(char) && next === 'ا') {
-           // Check for Alif + La pattern (Tuala)
            if (nextNext === 'ل' && nextNextNext === 'ا') {
               let k = KOD_JAWI[char];
               addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
               i += 2; continue;
            }
            
-           // Standard C+Alif
            if (i === 0 || !nextNext || !isKonsonan(nextNext)) {
               let k = KOD_JAWI[char];
               addPart(`${k.toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
@@ -649,7 +656,6 @@
            i++; continue;
         }
 
-        // Handle Shim/Syin (ش) specifically if needed, though covered by general KOD_JAWI check
         if (KOD_JAWI[char]) {
           addPart(KOD_JAWI[char].toLowerCase(), char, KOD_JAWI[char], 'Biasa');
           i++; continue;
