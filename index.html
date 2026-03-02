@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (SH/SY Priority Fix)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Shah Rule)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Fix SH/SY & Cross-Device</p>
+        <p class="text-gray-400">Fasa 1: Shah Rule (Alif Drop)</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: syafinas, shah, mus'ab..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: shah, shahril, shahrul..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -330,16 +330,16 @@
       "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم",
       "mengaji": "مڠاجي", "tuala": "توالا",
       "shahril": "شهريل", "syahril": "شهريل", 
+      "shahrul": "شهرول", "syahrul": "شهرول", 
       "shala": "شالا", "syala": "شالا",
       "sharifah": "شريفة", "syarifah": "شريفة",
       "shamsir": "شمسير", "syamsir": "شمسير",
       "shamsul": "شمسول", "syamsul": "شمسول",
-      "shah": "شاه",
+      "shah": "شاه", "syah": "شاه",
       "lari": "لاري", "dari": "دري", "mati": "ماتي", "bagi": "باݢي", 
       "urusan": "اوروسن",
       "akidah": "عقيده", "akad": "عقد",
       "mus'ab": "مصعب", "musaeb": "مصعب",
-      // Fix specific name
       "syafinas": "شافينس"
     };
 
@@ -353,7 +353,6 @@
     };
 
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
-
     const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','و','لا','ء'].includes(c);
 
     // ================= STATE =================
@@ -384,30 +383,28 @@
     async function getJawiText(rumiText, forceRefresh = false) {
       const lowerRumi = rumiText.toLowerCase();
       
-      // 1. Check Kamus Khas
+      // 1. Kamus Khas
       if (KAMUS_KHAS[lowerRumi]) {
         updateApiStatus('local'); 
         return { text: KAMUS_KHAS[lowerRumi], source: 'local' };
       }
 
-      // 2. Check Cache
+      // 2. Cache
       if (!forceRefresh && window.jawiCache[lowerRumi]) {
         let cached = window.jawiCache[lowerRumi];
         updateApiStatus('locked', 'Cache (Dikunci)');
         return { text: cached, source: 'cache' };
       }
 
-      // 3. FIX: Force Local for SH/SY clusters
-      // API often fails on these, returning 'siy' or 'si' instead of 'sh'.
+      // 3. Force Local for SH/SY
       if (lowerRumi.includes('sy') || lowerRumi.includes('sh')) {
          const localRes = localTransliterate(rumiText);
-         // Cache it so we don't re-calc
          window.jawiCache[lowerRumi] = localRes;
          updateApiStatus('local', 'Local (SH/SY)');
          return { text: localRes, source: 'local-cluster' };
       }
 
-      // 4. Try API
+      // 4. API
       const apiResult = await tryApiFetch(rumiText);
       if (apiResult) {
         window.jawiCache[lowerRumi] = apiResult;
@@ -435,7 +432,7 @@
       } catch (e) { return null; }
     }
 
-    // Local Transliterate with Standalone Vowel Support
+    // FIX: Local Transliterate with Shah Rule
     function localTransliterate(text) {
       if (!text) return '';
       text = text.toLowerCase().trim();
@@ -445,38 +442,48 @@
          let result = ''; let i = 0; const len = w.length;
          while (i < len) {
            const c = w[i]; const next = w[i+1] || ''; const next2 = w[i+2] || '';
+           const next3 = w[i+3] || ''; const next4 = w[i+4] || '';
            
-           // 1. Initial Vowels
+           // Initial Vowels
            if (i === 0 && 'aiueo'.includes(c)) {
              if (c === 'a') result += 'ا'; else if (c === 'i') result += 'اي'; else if (c === 'u') result += 'او';
              else if (c === 'e') result += 'اي'; else result += 'او'; 
              i++; continue;
            }
 
-           // 2. Clusters (SH, SY) - Priority High
+           // Shah Rule: SH + a + h + Consonant -> Drop Alif
+           // Example: Shahril -> S h a h r...
+           if ((c+next === 'sh' || c+next === 'sy') && next2 === 'a' && next3 === 'h') {
+              // Check if followed by a consonant (skipping 'h')
+              if (isKonsonan(next4)) {
+                 result += 'ش'; // Shin
+                 result += 'ه'; // Ha
+                 // Skip 's', 'h', 'a', 'h' -> Land at Consonant
+                 i += 4; continue;
+              }
+           }
+
+           // Standard Clusters (SH, SY, NG...)
            if (CONS_CLUSTER[c+next]) { 
              result += CONS_CLUSTER[c+next]; 
              i+=2; 
              continue; 
            }
 
-           // 3. Consonant Logic
+           // Consonant Logic
            if (CONS_MAP[c]) {
-             // Handles C + Vowel
              if ('aiueo'.includes(next)) {
                const vMap = { 'a':'ا', 'i':'ي', 'u':'و', 'e':'ي', 'o':'و' };
                result += CONS_MAP[c] + vMap[next]; 
                i+=2; 
                continue;
              }
-             // Handles C + Consonant (implicit pepet)
              if (next && (CONS_MAP[next] || CONS_CLUSTER[next])) {
                 result += CONS_MAP[c];
                 i++; continue;
              }
              result += CONS_MAP[c]; i++;
            }
-           // 4. Standalone Vowels (Middle/End of word)
            else if ('aiueo'.includes(c)) {
               if (c === 'a') result += 'ا';
               else if (c === 'i') result += 'ي';
@@ -494,30 +501,18 @@
     function updateApiStatus(status, customText = null) {
       if (!elApiStatus) return;
       elApiStatus.className = 'status-pill';
-      
-      let text = customText;
-      if (!text) {
-        if (status === 'api') text = 'API Muip';
-        else if (status === 'local') text = 'Engine Lokal';
-        else text = 'Dikunci';
-      }
-      
+      let text = customText || (status === 'api' ? 'API Muip' : (status === 'local' ? 'Engine Lokal' : 'Dikunci'));
       elApiStatus.textContent = text;
       elApiStatus.classList.remove('status-api', 'status-local', 'status-locked');
       if (status === 'api') elApiStatus.classList.add('status-api');
       else if (status === 'locked') elApiStatus.classList.add('status-locked');
       else elApiStatus.classList.add('status-local');
-
       if(elEngineInfo) elEngineInfo.textContent = `Sumber: ${text}`;
     }
 
     // ================= LOGIC PENGKODAN =================
     function kodkanWord(word, isNeg) {
-      let parts = [];
-      let breakdown = [];
-      let i = 0;
-      let len = word.length;
-      
+      let parts = []; let breakdown = []; let i = 0; let len = word.length;
       let prefix = isNeg ? 'Tiada punyai ' : 'Punyai ';
       if (word.startsWith('لا')) { prefix = ''; }
 
@@ -531,7 +526,6 @@
          }
          return null;
       };
-      
       const getMenguasaiConnector = () => isNeg ? 'tanpa menguasai' : 'dengan menguasai';
 
       while (i < len) {
