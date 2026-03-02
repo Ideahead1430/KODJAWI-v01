@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Menguasai)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Fix Menguasai)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Kata Hubung Menguasai</p>
+        <p class="text-gray-400">Fasa 1: Menguasai Syntax Fix</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -194,7 +194,7 @@
             </div>
 
             <div class="relative mb-4">
-              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: lari dari, mati, bagi..." oninput="handleRumiInput(event)">
+              <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Cth: lari dari, bagi, mati..." oninput="handleRumiInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
             
@@ -336,7 +336,7 @@
       "shamsul": "شمسول", "syamsul": "شمسول",
       "shah": "شاه",
       "lari": "لاري", "dari": "دري", "mati": "ماتي", "bagi": "باݢي", 
-      "urusan": "اوروسن" // Simplified
+      "urusan": "اوروسن"
     };
 
     window.jawiCache = {};
@@ -470,14 +470,13 @@
       }
     }
 
-    // ================= LOGIC PENGKODAN (CORE FIX: MENGUASAI) =================
+    // ================= LOGIC PENGKODAN (SMART CONNECTOR) =================
     function kodkanWord(word, isNeg) {
       let parts = [];
       let breakdown = [];
       let i = 0;
       let len = word.length;
       
-      // Remove 'Punyai' if starts with La
       let prefix = isNeg ? 'Tiada punyai ' : 'Punyai ';
       if (word.startsWith('لا')) {
           prefix = ''; 
@@ -488,7 +487,23 @@
         breakdown.push({ huruf: h, kod: k, type: t });
       };
       
-      // Helper for connector
+      // Helper: Returns the string for the subject of a "Menguasai" target
+      // Also handles the skipping logic internally by returning the skip count? 
+      // No, let's just return the string. We handle skip in the main loop.
+      const getMenguasaiSubject = (targetChar, nextChar, nextNextChar) => {
+         // Case: Ri (Ra + Ya)
+         if (targetChar === 'ر' && nextChar === 'ي') {
+           return { text: 'keyakinan yang ada tanda-tanda kejayaan', skip: 2 };
+         }
+         // Case: C + Ya (Generic)
+         if (isKonsonan(targetChar) && nextChar === 'ي') {
+           let k = KOD_JAWI[targetChar];
+           let subName = (targetChar === 'ر') ? 'keyakinan' : k.toLowerCase();
+           return { text: `${subName} yang ada tanda-tanda kejayaan`, skip: 2 };
+         }
+         return null;
+      };
+      
       const getMenguasaiConnector = () => isNeg ? 'tanpa menguasai' : 'dengan menguasai';
 
       while (i < len) {
@@ -497,7 +512,7 @@
         let nextNext = word[i + 2] || '';
         let nextNextNext = word[i + 3] || '';
 
-        // 1. POLA KHAS 3 HURUF
+        // 1. POLA KHAS 3 HURUF (Static)
         if (char === 'ن' && next === 'ي' && nextNext === 'ا') {
           addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas');
           i += 3; continue;
@@ -512,7 +527,7 @@
           i += 3; continue;
         }
         
-        // Dynamic 3-Letter Pattern (C + Y + C) - e.g., Shahril
+        // Dynamic 3-Letter Pattern (Shahril case: C + Y + C)
         if (isKonsonan(char) && next === 'ي' && isKonsonan(nextNext)) {
            let k1 = KOD_JAWI[char];
            let k3 = KOD_JAWI[nextNext];
@@ -525,25 +540,31 @@
         
         // LA (Lam Alif)
         if (char === 'ل' && next === 'ا') {
-          // Check Lookahead for "Baris Bawah" (Ya)
-          // Pattern: La followed by C+Ya (e.g. Lari, Laki)
-          let isFollowedByYa = (isKonsonan(nextNext) && nextNextNext === 'ي');
-          
           addPart('cerita-cerita', 'لا', 'Cerita-cerita', 'Pola Khas');
           
-          // If followed by Ya context, add Menguasai connector
-          if (isFollowedByYa) {
-             addPart(getMenguasaiConnector(), 'لا+ي', 'Penghubung Menguasai', 'Kombinasi');
-          } else if (nextNext && KOD_JAWI[nextNext]) {
-            addPart(`dengan adanya ${KOD_JAWI[nextNext].toLowerCase()}`, nextNext, KOD_JAWI[nextNext], 'Sambungan LA');
-            i += 1; // Skip nextNext because we processed it
+          // ** FIX: Smart Menguasai Logic for La **
+          // Check if followed by Ri or C+Ya
+          // Note: `nextNext` is the char after Alif.
+          // `nextNextNext` is the char after that.
+          // Pattern: La + Alif + [Target] + [TargetNext]
+          
+          let subjectData = getMenguasaiSubject(nextNext, nextNextNext, word[i+4]);
+          
+          if (subjectData) {
+             addPart(`${getMenguasaiConnector()} ${subjectData.text}`, 'لا+ي', 'Penghubung Menguasai', 'Kombinasi');
+             i += (2 + subjectData.skip); // Skip La + Alif + TargetLength
+             continue;
           }
           
-          i += 2; // Skip La
+          // Standard La continuation
+          if (nextNext && KOD_JAWI[nextNext]) {
+            addPart(`dengan adanya ${KOD_JAWI[nextNext].toLowerCase()}`, nextNext, KOD_JAWI[nextNext], 'Sambungan LA');
+            i += 3;
+          } else { i += 2; }
           continue;
         }
         
-        // RI (Ra + Ya) - Standalone
+        // RI (Standalone Ra + Ya)
         if (char === 'ر' && next === 'ي') {
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
           i += 2; continue;
@@ -565,21 +586,11 @@
              i += 2; continue;
         }
 
-        // Konsonan + Alif (Ma, Ba, Na...)
+        // Konsonan + Alif
         if (isKonsonan(char) && next === 'ا') {
-           // ** MAIN LOGIC: MENGUASAI CONNECTOR **
-           
-           // Check Lookahead: Is the next syllable involving Ya? (Baris Bawah context)
-           // Case 1: Alif followed by C + Ya (e.g. Ma + Ti, Ba + Gi)
-           let isFollowedByC_Ya = (isKonsonan(nextNext) && nextNextNext === 'ي');
-           // Case 2: Alif followed by Ya (e.g. Na + Yi -> Nain?)
-           let isFollowedByYa = (nextNext === 'ي');
-           
-           // Base Code for Konsonan+Alif
+           // Base Text
            let k = KOD_JAWI[char];
            let baseText = '';
-           
-           // Specific bases for better grammar
            if (char === 'م') baseText = 'Pedoman untuk mengatur';
            else if (char === 'ب') baseText = 'Dasar-dasar untuk mengatur';
            else if (char === 'ن') baseText = 'Pembeza';
@@ -587,17 +598,22 @@
            
            addPart(baseText, char+'ا', 'Konsonan+Alif', 'Kombinasi');
            
-           // If condition met, append Menguasai connector
-           if (isFollowedByC_Ya || isFollowedByYa) {
-              addPart(getMenguasaiConnector(), 'ا+ي', 'Penghubung Menguasai', 'Kombinasi');
+           // ** FIX: Smart Menguasai Logic for Konsonan+Alif **
+           // Lookahead: check if followed by Ri or C+Ya
+           // Pattern: C + Alif + [Target] + [TargetNext]
+           let subjectData = getMenguasaiSubject(nextNext, nextNextNext, word[i+4]);
+           
+           if (subjectData) {
+              addPart(`${getMenguasaiConnector()} ${subjectData.text}`, 'ا+ي', 'Penghubung Menguasai', 'Kombinasi');
+              i += (2 + subjectData.skip); // Skip C+Alif + TargetLength
+              continue;
            }
            
            i += 2; 
            continue;
         }
         
-        // Konsonan + Konsonan
-        // Check Lookahead to prevent breaking C+Ya patterns
+        // Konsonan + Konsonan (Prevent breaking Ri)
         if (isKonsonan(char) && isKonsonan(next)) {
            let isNextSpecial = (next === 'ر' && nextNext === 'ي') || (next === 'ل' && nextNext === 'ا');
            if (!isNextSpecial) {
@@ -608,7 +624,7 @@
            }
         }
 
-        // 4. PERATURAN ALIF (Tengah & Hujung)
+        // 4. PERATURAN ALIF
         if (char === 'ا') {
           if (i === 0) {
             if (next === 'ي') {
@@ -623,7 +639,6 @@
             }
           } 
           else if (i < len - 1) {
-            // Alif + La (Tuala case)
             if (next === 'ل' && nextNext === 'ا') {
                addPart('untuk diatur/mengatur dengan adanya cerita-cerita', 'ا+لا', 'Alif+La', 'Kombinasi');
                i += 3; continue;
