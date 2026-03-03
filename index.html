@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Input Pintar)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Fix Keyakinan)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Input Pintar (Rumi/Jawi)</p>
+        <p class="text-gray-400">Fasa 1: Gramar Keyakinan</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -504,7 +504,7 @@
       if(elEngineInfo) elEngineInfo.textContent = `Sumber: ${text}`;
     }
 
-    // ================= LOGIC PENGKODAN =================
+    // ================= LOGIC PENGKODAN (FIX KEYAKINAN) =================
     function kodkanWord(word, isNeg) {
       let parts = []; let breakdown = []; let i = 0; let len = word.length;
       let prefix = isNeg ? 'Tiada punyai ' : 'Punyai ';
@@ -547,15 +547,28 @@
         if (char === 'ر' && next === 'ي') { addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi'); i += 2; continue; }
         if (isKonsonan(char) && next === 'و') { addPart(`${KOD_JAWI[char].toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi'); i += 2; continue; }
         if (isKonsonan(char) && next === 'ي' && (i === len - 2)) { addPart(`dikuasai oleh ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi'); i += 2; continue; }
+        
+        // FIX: Konsonan + Alif (Ra + Alif case)
         if (isKonsonan(char) && next === 'ا') {
-           addPart(`${KOD_JAWI[char].toLowerCase()} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
+           let k = KOD_JAWI[char];
+           // If char is Ra, use "keyakinan"
+           let textStart = (char === 'ر') ? 'keyakinan' : `${k.toLowerCase()}`;
+           addPart(`${textStart} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
            let subjectData = getMenguasaiSubject(nextNext, nextNextNext);
            if (subjectData) { addPart(`${getMenguasaiConnector()} ${subjectData.text}`, 'ا+ي', 'Penghubung Menguasai', 'Kombinasi'); i += (2 + subjectData.skip); continue; }
            i += 2; continue;
         }
+
+        // FIX: Konsonan + Konsonan (Mim + Ra case)
         if (isKonsonan(char) && isKonsonan(next)) {
            let isNextSpecial = (next === 'ر' && nextNext === 'ي') || (next === 'ل' && nextNext === 'ا') || (next === 'ق') || (next === 'ڽ');
-           if (!isNextSpecial) { addPart(`${KOD_JAWI[char].toLowerCase()} dengan adanya ${KOD_JAWI[next].toLowerCase()}`, char+next, 'Konsonan+Konsonan', 'Kombinasi'); i += 2; continue; }
+           if (!isNextSpecial) { 
+             let k1 = KOD_JAWI[char];
+             // If next is Ra (ر), use "keyakinan" instead of "yakin"
+             let k2Text = (next === 'ر') ? 'keyakinan' : KOD_JAWI[next].toLowerCase();
+             addPart(`${k1.toLowerCase()} dengan adanya ${k2Text}`, char+next, 'Konsonan+Konsonan', 'Kombinasi'); 
+             i += 2; continue; 
+           }
         }
 
         if (char === 'ا') {
@@ -587,7 +600,7 @@
       return { output: prefix + parts.join(', '), breakdown: breakdown };
     }
 
-    // ================= EVENT HANDLERS (PINTAR) =================
+    // ================= EVENT HANDLERS =================
     async function handleInput(e) {
       const val = e.target.value;
       clearTimeout(debounceTimer);
@@ -599,7 +612,6 @@
       elPreviewJawi.style.opacity = 0.5;
 
       debounceTimer = setTimeout(async () => {
-        // FIX: Smart Detection - If input contains Jawi characters, treat as Jawi Source
         const isJawiInput = /[\u0600-\u06FF]/.test(val);
 
         if (isJawiInput) {
@@ -623,7 +635,6 @@
         elBtnRegenerate.disabled = true;
         elBtnRegenerate.innerHTML = `<div class="spinner" style="width:12px;height:12px;border-width:1px;"></div> Memuat...`;
         
-        // If input is Jawi, regeneration doesn't apply (it's already Jawi). Just reset.
         const isJawiInput = /[\u0600-\u06FF]/.test(val);
         if (isJawiInput) {
            currentJawiResult = val;
@@ -643,8 +654,6 @@
 
     function processText() {
       const rumiInput = elInputRumi.value;
-      // Note: If input is Jawi, rumiInput contains Jawi text. 
-      // We fallback to currentJawiResult or the input itself.
       const jawiText = currentJawiResult || rumiInput; 
       
       if (!jawiText.trim()) return;
