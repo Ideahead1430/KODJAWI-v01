@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Punctuation Fix)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Stable)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -181,7 +181,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Smart Punctuation</p>
+        <p class="text-gray-400">Fasa 1: Stable Release</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -420,39 +420,40 @@
       let prefix = isNeg ? 'Tiada punyai' : 'Punyai';
       if (word.startsWith('لا')) prefix = '';
 
+      // addPart Arguments: (Text, Huruf, Label, Type)
       const addPart = (text, h, k, t) => { breakdown.push({ huruf: h, kod: text, type: t }); };
       const addConn = (text) => { breakdown.push({ huruf: '→', kod: text, type: 'Kata Hubung' }); };
-
+      
       while (i < len) {
         let char = word[i], next = word[i+1]||'', nextNext = word[i+2]||'', nextNextNext = word[i+3]||'', nextNextNextNext = word[i+4]||'';
 
         // 1. POLA KHAS 3 HURUF
-        if (char==='ن'&&next==='ي'&&nextNext==='ا') { addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا'); if(i===0) prefix=''; i+=3; continue; }
-        if (char==='ع'&&next==='ا'&&nextNext==='ء') { addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء'); if(i===0) prefix=''; i+=3; continue; }
-        if ((char==='ڽ'||char==='ق'||char==='ز')&&next==='ي'&&nextNext==='ا') { addPart(`demi ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
+        if (char==='ن'&&next==='ي'&&nextNext==='ا') { addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
+        if (char==='ع'&&next==='ا'&&nextNext==='ء') { addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
+        if ((char==='ڽ'||char==='ق'||char==='ز')&&next==='ي'&&nextNext==='ا') { addPart(`demi ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         
         // C+Y+C (Generic)
         if (isKonsonan(char)&&next==='ي'&&isKonsonan(nextNext)) { 
-           addPart(`dikuasai oleh ${(char==='ر'?'keyakinan':KOD_JAWI[char].toLowerCase())} yang ada tanda-tanda kejayaan serta ${KOD_JAWI[nextNext].toLowerCase()}`, char+'ي'+nextNext, 'Pola 3 Huruf'); 
+           addPart(`dikuasai oleh ${(char==='ر'?'keyakinan':KOD_JAWI[char].toLowerCase())} yang ada tanda-tanda kejayaan serta ${KOD_JAWI[nextNext].toLowerCase()}`, char+'ي'+nextNext, 'Pola 3 Huruf', 'Kombinasi'); 
            if(i===0) prefix=''; 
            i+=3; continue; 
         }
 
         // 2. UNIT LA (Lam Alif)
         if (char==='ل'&&next==='ا') {
-          addPart('cerita-cerita', 'لا', 'Pola Khas');
+          addPart('cerita-cerita', 'لا', 'Pola Khas', 'Pola Khas');
           if(i===0) prefix='';
           
           let nextUnit = { char: nextNext, isRi: (nextNext==='ر'&&nextNextNext==='ي') };
-          if (nextUnit.isRi) { addConn(isNeg?'tanpa menguasai':'dengan menguasai'); addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Pola Riyawi'); i+=4; }
-          else if (nextNext&&KOD_JAWI[nextNext]) { addConn('dengan adanya'); addPart(KOD_JAWI[nextNext].toLowerCase(), nextNext, KOD_JAWI[nextNext]); i+=3; }
+          if (nextUnit.isRi) { addConn(isNeg?'tanpa menguasai':'dengan menguasai'); addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Pola Riyawi', 'Kombinasi'); i+=4; }
+          else if (nextNext&&KOD_JAWI[nextNext]) { addConn('dengan adanya'); addPart(KOD_JAWI[nextNext].toLowerCase(), nextNext, KOD_JAWI[nextNext], 'Biasa'); i+=3; }
           else { i+=2; }
           continue;
         }
         
         // 3. UNIT RI (Ra + Ya)
         if (char==='ر'&&next==='ي') { 
-          addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري'); 
+          addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi'); 
           if(i===0) prefix=''; 
           i+=2; continue; 
         }
@@ -460,44 +461,44 @@
         // 4. UNIT SHIM/SHIN (Shah Rule)
         if (char==='ش') {
             if (next==='ه' && isKonsonan(nextNext)) {
-                addPart('penegasan', 'ش', 'Penegasan'); addPart('jemaah', 'ه', 'Jemaah');
+                addPart('penegasan', 'ش', 'Penegasan', 'Biasa'); addPart('jemaah', 'ه', 'Jemaah', 'Biasa');
                 let nc = nextNext;
-                if (nc==='ر'&&nextNextNext==='ي') { addConn('dikuasai oleh'); addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Kombinasi'); i+=5; }
-                else if (isKonsonan(nc)) { addConn('dengan adanya'); addPart(KOD_JAWI[nc].toLowerCase(), nc, 'Biasa'); i+=3; }
+                if (nc==='ر'&&nextNextNext==='ي') { addConn('dikuasai oleh'); addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Kombinasi', 'Kombinasi'); i+=5; }
+                else if (isKonsonan(nc)) { addConn('dengan adanya'); addPart(KOD_JAWI[nc].toLowerCase(), nc, KOD_JAWI[nc], 'Biasa'); i+=3; }
                 else { i+=2; }
                 continue;
             }
-            addPart('penegasan', 'ش', 'Penegasan'); i++; continue;
+            addPart('penegasan', 'ش', 'Penegasan', 'Biasa'); i++; continue;
         }
 
         // 5. UNIT DEMI (Qaf/Nya)
         if (char==='ق'||char==='ڽ') {
            let k=KOD_JAWI[char];
-           if(next==='ي') { addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Kata Hubung demi'); if(i===0) prefix=''; i+=2; continue; }
-           if(isKonsonan(next)) { addPart(`demi ${k.toLowerCase()}`, char, 'Kata Hubung demi'); addConn('dengan adanya'); addPart(KOD_JAWI[next].toLowerCase(), next, 'Konsonan+Konsonan'); if(i===0) prefix=''; i+=2; continue; }
-           addPart(`demi ${k.toLowerCase()}`, char, 'Kata Hubung demi'); if(i===0) prefix=''; i++; continue;
+           if(next==='ي') { addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Kata Hubung demi', 'Kombinasi'); if(i===0) prefix=''; i+=2; continue; }
+           if(isKonsonan(next)) { addPart(`demi ${k.toLowerCase()}`, char, 'Kata Hubung demi', 'Kombinasi'); addConn('dengan adanya'); addPart(KOD_JAWI[next].toLowerCase(), next, KOD_JAWI[next], 'Kombinasi'); if(i===0) prefix=''; i+=2; continue; }
+           addPart(`demi ${k.toLowerCase()}`, char, 'Kata Hubung demi', 'Kombinasi'); if(i===0) prefix=''; i++; continue;
         }
 
         // 6. UNIT ALIF (Start)
         if (char==='ا' && i===0) {
             if (next === 'ي') {
-                addPart('dikuasai oleh aturan yang ada tanda-tanda kejayaan', 'اي', 'Alif+Ya Awal');
+                addPart('dikuasai oleh aturan yang ada tanda-tanda kejayaan', 'اي', 'Alif+Ya Awal', 'Kombinasi');
                 prefix = ''; 
                 i += 2; continue;
             }
 
-            addPart('aturan', 'ا', 'Aturan');
+            addPart('aturan', 'ا', 'Aturan', 'Biasa');
             
             if (next==='ر' && nextNext==='ي') {
                addConn('dikuasai oleh');
-               addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Kombinasi');
+               addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Kombinasi', 'Kombinasi');
                i+=3; continue;
             }
             if (isKonsonan(next) && nextNext==='ي' && isKonsonan(nextNextNext)) {
                addConn('dikuasai oleh');
                let c1 = next, c2 = nextNextNext;
                let k1 = (c1==='ر'?'keyakinan':KOD_JAWI[c1].toLowerCase());
-               addPart(`${k1} yang ada tanda-tanda kejayaan serta ${KOD_JAWI[c2].toLowerCase()}`, c1+'ي'+c2, 'Kombinasi');
+               addPart(`${k1} yang ada tanda-tanda kejayaan serta ${KOD_JAWI[c2].toLowerCase()}`, c1+'ي'+c2, 'Kombinasi', 'Kombinasi');
                i+=4; continue;
             }
             
@@ -517,38 +518,38 @@
         } 
         // Middle/End Alif
         else if (char==='ا') {
-             if (next==='ل'&&nextNext==='ا') { addPart('untuk diatur/mengatur dengan adanya cerita-cerita', 'ا+لا', 'Alif+La'); i+=3; continue; }
-             if (next==='ل'&&nextNext==='ي') { addPart('aturan', 'ا', 'Aturan'); i++; continue; }
-             if (next==='ل') { addPart('untuk diatur/mengatur melalui orang-orang yang beriman', 'ا+ل', 'Alif+Lam'); i+=2; }
-             else if (next==='ڽ'||next==='ق'||next==='ز') { addPart(`untuk diatur/mengatur demi ${KOD_JAWI[next].toLowerCase()}`, 'ا+'+next, 'Alif+Khas'); i+=2; }
-             else if (next&&KOD_JAWI[next]) { addPart(`untuk diatur/mengatur berlandaskan ${KOD_JAWI[next].toLowerCase()}`, 'ا', 'Alif Tengah'); i+=2; }
-             else { addPart('aturan', 'ا', 'Aturan'); i++; }
+             if (next==='ل'&&nextNext==='ا') { addPart('untuk diatur/mengatur dengan adanya cerita-cerita', 'ا+لا', 'Alif+La', 'Kombinasi'); i+=3; continue; }
+             if (next==='ل'&&nextNext==='ي') { addPart('aturan', 'ا', 'Aturan', 'Biasa'); i++; continue; }
+             if (next==='ل') { addPart('untuk diatur/mengatur melalui orang-orang yang beriman', 'ا+ل', 'Alif+Lam', 'Kombinasi'); i+=2; }
+             else if (next==='ڽ'||next==='ق'||next==='ز') { addPart(`untuk diatur/mengatur demi ${KOD_JAWI[next].toLowerCase()}`, 'ا+'+next, 'Alif+Khas', 'Kombinasi'); i+=2; }
+             else if (next&&KOD_JAWI[next]) { addPart(`untuk diatur/mengatur berlandaskan ${KOD_JAWI[next].toLowerCase()}`, 'ا', 'Alif Tengah', 'Kombinasi'); i+=2; }
+             else { addPart('aturan', 'ا', 'Aturan', 'Biasa'); i++; }
              continue;
         }
 
         // 7. STANDARD UNITS
-        if (isKonsonan(char)&&next==='و') { addPart(`${KOD_JAWI[char].toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau'); i+=2; continue; }
-        if (isKonsonan(char)&&next==='ي'&&(i===len-2)) { addPart(`dikuasai oleh ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya'); i+=2; continue; }
+        if (isKonsonan(char)&&next==='و') { addPart(`${KOD_JAWI[char].toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi'); i+=2; continue; }
+        if (isKonsonan(char)&&next==='ي'&&(i===len-2)) { addPart(`dikuasai oleh ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi'); i+=2; continue; }
         if (isKonsonan(char)&&next==='ا') {
            let k=KOD_JAWI[char]; let txt=(char==='ر'?'keyakinan':`${k.toLowerCase()}`);
-           addPart(`${txt} dengan adanya aturan`, char+'ا', 'Konsonan+Alif');
+           addPart(`${txt} dengan adanya aturan`, char+'ا', 'Konsonan+Alif', 'Kombinasi');
            let subjectData = (nextNext==='ر'&&nextNextNext==='ي') ? {isRi:true} : null;
-           if(subjectData) { addConn(isNeg?'tanpa menguasai':'dengan menguasai'); addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Pola Riyawi'); i+=4; continue; }
+           if(subjectData) { addConn(isNeg?'tanpa menguasai':'dengan menguasai'); addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Pola Riyawi', 'Kombinasi'); i+=4; continue; }
            i+=2; continue;
         }
         if (isKonsonan(char)&&isKonsonan(next)) {
            let isNextSpecial = (next==='ر'&&nextNext==='ي')||(next==='ل'&&nextNext==='ا')||(next==='ق')||(next==='ڽ');
-           if(!isNextSpecial) { addPart(`${KOD_JAWI[char].toLowerCase()} dengan adanya ${(next==='ر'?'keyakinan':KOD_JAWI[next].toLowerCase())}`, char+next, 'Konsonan+Konsonan'); i+=2; continue; }
+           if(!isNextSpecial) { addPart(`${KOD_JAWI[char].toLowerCase()} dengan adanya ${(next==='ر'?'keyakinan':KOD_JAWI[next].toLowerCase())}`, char+next, 'Konsonan+Konsonan', 'Kombinasi'); i+=2; continue; }
         }
 
         // 8. HURUF BIASA
-        if (char==='ر') { addPart((i===0?'keyakinan':'yang diyakini'), 'ر', (i===0?'Keyakinan':'Yang diyakini')); i++; continue; }
-        if (char==='ن') { addPart((i===len-1?'dengan adanya pembeza':'pembeza'), 'ن', (i===len-1?'Nun Hujung':'Pembeza')); i++; continue; }
-        if (char==='ه') { addPart((i===len-1?'terikat dengan adanya jemaah':'jemaah'), 'ه', (i===len-1?'Terikat jemaah':'Jemaah'); i++; continue; }
-        if (char==='ي') { addPart('tanda-tanda kejayaan', 'ي', 'Tanda-tanda kejayaan'); i++; continue; }
-        if (char==='و') { addPart('jelas', 'و', 'Jelas'); i++; continue; }
+        if (char==='ر') { addPart((i===0?'keyakinan':'yang diyakini'), 'ر', (i===0?'Keyakinan':'Yang diyakini'), 'Posisi'); i++; continue; }
+        if (char==='ن') { addPart((i===len-1?'dengan adanya pembeza':'pembeza'), 'ن', (i===len-1?'Nun Hujung':'Pembeza'), 'Biasa'); i++; continue; }
+        if (char==='ه') { addPart((i===len-1?'terikat dengan adanya jemaah':'jemaah'), 'ه', (i===len-1?'Terikat jemaah':'Jemaah'), 'Biasa'); i++; continue; }
+        if (char==='ي') { addPart('tanda-tanda kejayaan', 'ي', 'Tanda-tanda kejayaan', 'Biasa'); i++; continue; }
+        if (char==='و') { addPart('jelas', 'و', 'Jelas', 'Biasa'); i++; continue; }
 
-        if (KOD_JAWI[char]) { addPart(KOD_JAWI[char].toLowerCase(), char, KOD_JAWI[char]); i++; continue; }
+        if (KOD_JAWI[char]) { addPart(KOD_JAWI[char].toLowerCase(), char, KOD_JAWI[char], 'Biasa'); i++; continue; }
         i++;
       }
       return { breakdown: breakdown, prefix: prefix };
@@ -556,7 +557,6 @@
 
     // ================= SMART SENTENCE BUILDER =================
     function buildSentence(breakdown, prefix) {
-        // Add prefix to breakdown temporarily for processing
         let tempBreakdown = [];
         if (prefix) {
             tempBreakdown.push({ kod: prefix.trim(), type: 'Prefix' });
@@ -592,7 +592,11 @@
     // ================= EVENT HANDLERS =================
     async function handleInput(e) {
       const val = e.target.value; clearTimeout(debounceTimer);
-      if (!val) { elPreviewJawi.innerHTML = "<span class='text-gray-600' style='direction:ltr;font-family:\"IBM Plex Sans\";font-size:0.9rem'>Sila taip...</span>"; currentJawiResult=''; return; }
+      if (!val) { 
+        // FIX: Corrected string quotes for innerHTML
+        elPreviewJawi.innerHTML = '<span class="text-gray-600" style="direction: ltr; font-family: \'IBM Plex Sans\'; font-size: 0.9rem;">Sila taip...</span>'; 
+        currentJawiResult=''; return; 
+      }
       elLoading.classList.remove('hidden'); elPreviewJawi.style.opacity=0.5;
       debounceTimer = setTimeout(async () => {
         const isJawi = /[\u0600-\u06FF]/.test(val);
@@ -620,7 +624,6 @@
       
       words.forEach(w => { 
         const res=kodkanWord(w,isNeg); 
-        // If kodkanWord stripped the prefix (returned empty string), we respect that for the first word.
         if(allBreakdown.length === 0) {
             finalPrefix = res.prefix;
         }
