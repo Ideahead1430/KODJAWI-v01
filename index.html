@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Fixed Table)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Syllable Break Fix)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -180,7 +180,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Final Build</p>
+        <p class="text-gray-400">Fasa 1: Syllable Break Fix</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -338,7 +338,8 @@
       "shala": "شالا", "syala": "شالا", "sharifah": "شريفة", "syarifah": "شريفة",
       "shamsir": "شمسير", "syamsir": "شمسير", "shamsul": "شمسول", "syamsul": "شمسول",
       "shah": "شاه", "syah": "شاه", "lari": "لاري", "dari": "دري", "mati": "ماتي", "bagi": "باݢي", 
-      "urusan": "اوروسن", "akidah": "عقيده", "akad": "عقد", "syafinas": "شافينس", "alif": "اليف", "ikut": "ايکوت"
+      "urusan": "اوروسن", "akidah": "عقيده", "akad": "عقد", "syafinas": "شافينس", "alif": "اليف", "ikut": "ايکوت",
+      "kebun": "کبون"
     };
 
     window.jawiCache = {};
@@ -366,8 +367,7 @@
       window.elLoading = document.getElementById('loadingSpinner');
       window.elEngineInfo = document.getElementById('engineUsed');
       window.elBtnRegenerate = document.getElementById('btnRegenerate');
-      renderKodTable(''); 
-      loadHistory();
+      renderKodTable(''); loadHistory();
     });
 
     // ================= LOGIC TRANSLITERASI =================
@@ -414,7 +414,7 @@
 
     function updateApiStatus(s, t) { if(!elApiStatus) return; elApiStatus.className='status-pill'; elApiStatus.textContent=t||s; elApiStatus.classList.remove('status-api','status-local','status-locked'); elApiStatus.classList.add(s==='api'?'status-api':s==='locked'?'status-locked':'status-local'); if(elEngineInfo) elEngineInfo.textContent=`Sumber: ${t||s}`; }
 
-    // ================= LOGIC PENGKODAN =================
+    // ================= LOGIC PENGKODAN (SYLLABLE BREAK FIX) =================
     function kodkanWord(word, isNeg) {
       let breakdown = [], i = 0, len = word.length;
       let prefix = isNeg ? 'Tiada punyai' : 'Punyai';
@@ -426,16 +426,19 @@
       while (i < len) {
         let char = word[i], next = word[i+1]||'', nextNext = word[i+2]||'', nextNextNext = word[i+3]||'', nextNextNextNext = word[i+4]||'';
 
+        // 1. POLA KHAS 3 HURUF
         if (char==='ن'&&next==='ي'&&nextNext==='ا') { addPart('dikuasai oleh pembeza yang ada tanda-tanda kejayaan dengan adanya aturan', 'نيا', 'Pola Khas نيا', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         if (char==='ع'&&next==='ا'&&nextNext==='ء') { addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         if ((char==='ڽ'||char==='ق'||char==='ز')&&next==='ي'&&nextNext==='ا') { addPart(`demi ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         
+        // C+Y+C (Generic)
         if (isKonsonan(char)&&next==='ي'&&isKonsonan(nextNext)) { 
            addPart(`dikuasai oleh ${(char==='ر'?'keyakinan':KOD_JAWI[char].toLowerCase())} yang ada tanda-tanda kejayaan serta ${KOD_JAWI[nextNext].toLowerCase()}`, char+'ي'+nextNext, 'Pola 3 Huruf', 'Kombinasi'); 
            if(i===0) prefix=''; 
            i+=3; continue; 
         }
 
+        // 2. UNIT LA (Lam Alif)
         if (char==='ل'&&next==='ا') {
           addPart('cerita-cerita', 'لا', 'Pola Khas', 'Pola Khas');
           if(i===0) prefix='';
@@ -446,12 +449,14 @@
           continue;
         }
         
+        // 3. UNIT RI (Ra + Ya)
         if (char==='ر'&&next==='ي') { 
           addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi'); 
           if(i===0) prefix=''; 
           i+=2; continue; 
         }
 
+        // 4. UNIT SHIM/SHIN (Shah Rule)
         if (char==='ش') {
             if (next==='ه' && isKonsonan(nextNext)) {
                 addPart('penegasan', 'ش', 'Penegasan', 'Biasa'); addPart('jemaah', 'ه', 'Jemaah', 'Biasa');
@@ -464,6 +469,7 @@
             addPart('penegasan', 'ش', 'Penegasan', 'Biasa'); i++; continue;
         }
 
+        // 5. UNIT DEMI (Qaf/Nya)
         if (char==='ق'||char==='ڽ') {
            let k=KOD_JAWI[char];
            if(next==='ي') { addPart(`demi ${k.toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Kata Hubung demi', 'Kombinasi'); if(i===0) prefix=''; i+=2; continue; }
@@ -471,6 +477,7 @@
            addPart(`demi ${k.toLowerCase()}`, char, 'Kata Hubung demi', 'Kombinasi'); if(i===0) prefix=''; i++; continue;
         }
 
+        // 6. UNIT ALIF (Start)
         if (char==='ا' && i===0) {
             if (next === 'ي') {
                 addPart('dikuasai oleh aturan yang ada tanda-tanda kejayaan', 'اي', 'Alif+Ya Awal', 'Kombinasi');
@@ -507,6 +514,7 @@
             
             i++; continue;
         } 
+        // Middle/End Alif
         else if (char==='ا') {
              if (next==='ل'&&nextNext==='ا') { addPart('untuk diatur/mengatur dengan adanya cerita-cerita', 'ا+لا', 'Alif+La', 'Kombinasi'); i+=3; continue; }
              if (next==='ل'&&nextNext==='ي') { addPart('aturan', 'ا', 'Aturan', 'Biasa'); i++; continue; }
@@ -517,6 +525,7 @@
              continue;
         }
 
+        // 7. STANDARD UNITS
         if (isKonsonan(char)&&next==='و') { addPart(`${KOD_JAWI[char].toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi'); i+=2; continue; }
         if (isKonsonan(char)&&next==='ي'&&(i===len-2)) { addPart(`dikuasai oleh ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi'); i+=2; continue; }
         if (isKonsonan(char)&&next==='ا') {
@@ -526,11 +535,24 @@
            if(subjectData) { addConn(isNeg?'tanpa menguasai':'dengan menguasai'); addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Pola Riyawi', 'Kombinasi'); i+=4; continue; }
            i+=2; continue;
         }
+        
+        // FIX: Konsonan + Konsonan (Syllable Break Check)
+        // If 'next' is followed by a vowel, 'next' is the start of a new syllable. Do not merge.
         if (isKonsonan(char)&&isKonsonan(next)) {
+           // Check if next starts a CV syllable (Next is followed by Vowel)
+           // KEBUN: Kaf (C), Ba (C), Wau (V). Ba is followed by vowel -> Break.
+           const isSyllableBreak = nextNext && ['ا','ي','و'].includes(nextNext);
            let isNextSpecial = (next==='ر'&&nextNext==='ي')||(next==='ل'&&nextNext==='ا')||(next==='ق')||(next==='ڽ');
-           if(!isNextSpecial) { addPart(`${KOD_JAWI[char].toLowerCase()} dengan adanya ${(next==='ر'?'keyakinan':KOD_JAWI[next].toLowerCase())}`, char+next, 'Konsonan+Konsonan', 'Kombinasi'); i+=2; continue; }
+           
+           // Only merge if NO syllable break and NO special patterns
+           if(!isSyllableBreak && !isNextSpecial) { 
+             addPart(`${KOD_JAWI[char].toLowerCase()} dengan adanya ${(next==='ر'?'keyakinan':KOD_JAWI[next].toLowerCase())}`, char+next, 'Konsonan+Konsonan', 'Kombinasi'); 
+             i+=2; continue; 
+           }
+           // Else: Fall through to Huruf Biasa to handle 'char' separately
         }
 
+        // 8. HURUF BIASA
         if (char==='ر') { addPart((i===0?'keyakinan':'yang diyakini'), 'ر', (i===0?'Keyakinan':'Yang diyakini'), 'Posisi'); i++; continue; }
         if (char==='ن') { addPart((i===len-1?'dengan adanya pembeza':'pembeza'), 'ن', (i===len-1?'Nun Hujung':'Pembeza'), 'Biasa'); i++; continue; }
         if (char==='ه') { addPart((i===len-1?'terikat dengan adanya jemaah':'jemaah'), 'ه', (i===len-1?'Terikat jemaah':'Jemaah'), 'Biasa'); i++; continue; }
@@ -637,7 +659,6 @@
       }
     }
     
-    // FIX: Corrected function variable name to avoid shadowing
     function renderKodTable(f) { 
         let html = ''; 
         Object.entries(KOD_JAWI).forEach(([key, val]) => { 
