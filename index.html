@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Shah Unified)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Stable Release)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -22,171 +22,53 @@
       --negative: #f87171;
       --info: #60a5fa;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'IBM Plex Sans', sans-serif;
-      background-color: var(--bg-deep);
-      color: var(--fg);
-      line-height: 1.6;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
+    body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--bg-deep); color: var(--fg); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
     .font-jawi { font-family: 'Amiri', serif; direction: rtl; }
-
-    .bg-texture {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background-color: var(--bg-deep);
-      background-image: 
-        radial-gradient(circle at 100% 0%, rgba(229, 167, 64, 0.08) 0%, transparent 25%),
-        radial-gradient(circle at 0% 100%, rgba(229, 167, 64, 0.05) 0%, transparent 25%);
-    }
-
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .input-main {
-      width: 100%;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      color: var(--fg);
-      font-size: 1.125rem;
-      transition: all 0.2s;
-      outline: none;
-    }
-
-    .input-main:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-dim);
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1.2rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: none;
-      font-family: inherit;
-      font-size: 0.875rem;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #d4922e);
-      color: #000;
-      box-shadow: 0 4px 14px rgba(229, 167, 64, 0.25);
-    }
-
+    .bg-texture { position: fixed; inset: 0; z-index: -1; background-color: var(--bg-deep); background-image: radial-gradient(circle at 100% 0%, rgba(229, 167, 64, 0.08) 0%, transparent 25%), radial-gradient(circle at 0% 100%, rgba(229, 167, 64, 0.05) 0%, transparent 25%); }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .input-main { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; color: var(--fg); font-size: 1.125rem; transition: all 0.2s; outline: none; }
+    .input-main:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 1.2rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; border: none; font-family: inherit; font-size: 0.875rem; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #d4922e); color: #000; box-shadow: 0 4px 14px rgba(229, 167, 64, 0.25); }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(229, 167, 64, 0.4); }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--fg-muted);
-    }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--fg-muted); }
     .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.25rem 0.75rem;
-      background: var(--accent-dim);
-      color: var(--accent);
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .status-pill {
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
+    .tag { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; background: var(--accent-dim); color: var(--accent); border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .status-pill { padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
     .status-local { background: rgba(96, 165, 250, 0.15); color: var(--info); }
     .status-api { background: rgba(74, 222, 128, 0.15); color: var(--success); }
     .status-locked { background: rgba(229, 167, 64, 0.2); color: var(--accent); border: 1px solid var(--accent); }
-
-    .result-box {
-      background: var(--bg-elevated);
-      border-radius: 12px;
-      padding: 1.25rem;
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--accent);
-    }
-
-    .breakdown-item {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-      padding: 0.875rem;
-      background: rgba(255,255,255,0.03);
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-      border: 1px solid transparent;
-      transition: all 0.2s;
-    }
+    .result-box { background: var(--bg-elevated); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border); border-left: 4px solid var(--accent); }
+    .breakdown-item { display: flex; align-items: center; gap: 1.25rem; padding: 0.875rem; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid transparent; transition: all 0.2s; }
     .breakdown-item:hover { border-color: var(--border); background: rgba(255,255,255,0.05); }
     .breakdown-item .char { width: 50px; text-align: center; font-size: 1.75rem; color: var(--accent); }
-    
     .breakdown-item.conn { background: rgba(229, 167, 64, 0.05); border-color: var(--accent-dim); }
     .breakdown-item.conn .char { color: var(--fg-muted); font-size: 1.2rem; }
-
-    .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid rgba(0,0,0,0.1);
-      border-left-color: #000;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: inline-block;
-    }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.1); border-left-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     .data-table th, .data-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
     .data-table th { color: var(--fg-muted); font-weight: 500; font-size: 0.7rem; text-transform: uppercase; }
     .data-table td:first-child { font-size: 1.25rem; text-align: center; width: 50px; }
-
     .footer-link { color: var(--fg-muted); transition: color 0.2s; }
     .footer-link:hover { color: var(--accent); }
   </style>
 </head>
 <body>
-
   <div class="bg-texture"></div>
-
   <div class="flex-grow">
     <div class="max-w-6xl mx-auto px-4 py-8">
-      
       <header class="text-center mb-10">
         <div class="mb-6">
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Shah Unified Pattern</p>
+        <p class="text-gray-400">Fasa 1: Shah Unified Pattern (Fixed)</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
-        
         <div class="md:col-span-2 space-y-6">
-          
           <div class="card">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold">Input Teks</h2>
@@ -195,17 +77,14 @@
                 <span id="apiStatus" class="status-pill status-local">Engine Lokal</span>
               </div>
             </div>
-
             <div class="relative mb-4">
               <input type="text" id="inputRumi" class="input-main pr-20" placeholder="Taip Rumi atau Tampal Jawi..." oninput="handleInput(event)">
               <div id="loadingSpinner" class="absolute right-4 top-4 hidden"><div class="spinner"></div></div>
             </div>
-            
             <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
                <span>Paparan Jawi</span>
                <span id="engineUsed">Sumber: Enjin Dalaman</span>
             </div>
-            
             <div class="mb-4 p-4 bg-black/20 rounded-lg border border-gray-700">
                 <div id="previewJawi" class="font-jawi text-2xl min-h-60px flex items-center justify-end mb-3">
                   <span class="text-gray-600" style="direction: ltr; font-family: 'IBM Plex Sans'; font-size: 0.9rem;">Sila taip...</span>
@@ -217,7 +96,6 @@
                     </button>
                 </div>
             </div>
-
             <div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-700">
               <div class="flex items-center gap-2">
                 <input type="checkbox" id="checkNegative" class="w-4 h-4 accent-amber-500 cursor-pointer">
@@ -229,7 +107,6 @@
               </button>
             </div>
           </div>
-
           <div class="card">
             <h2 class="text-lg font-semibold mb-3">Hasil Kod</h2>
             <div id="resultContainer" class="result-box">
@@ -240,11 +117,9 @@
               <div id="breakdownList"></div>
             </div>
           </div>
-
         </div>
 
         <div class="space-y-6">
-          
           <div class="card">
             <div class="flex justify-between items-center mb-3">
               <h3 class="font-semibold">Sejarah</h3>
@@ -254,10 +129,9 @@
               <p class="text-gray-600 italic text-xs">Tiada rekod</p>
             </div>
           </div>
-
           <div class="card">
             <h3 class="font-semibold mb-3">Jadual Rujukan</h3>
-            <input type="text" class="input-main text-xs mb-3 py-2" placeholder="Cari kod..." oninput="filterTable(this.value)">
+            <input type="text" id="searchTable" class="input-main text-xs mb-3 py-2" placeholder="Cari kod..." oninput="filterTable(this.value)">
             <div class="overflow-y-auto max-h-80" style="overscroll-behavior: contain;">
               <table class="data-table">
                 <thead>
@@ -267,7 +141,6 @@
               </table>
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -280,24 +153,13 @@
           <h4 class="text-amber-400 font-semibold uppercase tracking-wider text-xs mb-2">Maklumat Projek</h4>
           <p><span class="text-gray-300 font-medium">Hakcipta Kod Jawi:</span><br>Mohamed Bin Abbas (INSTITUT TAHFIZ AL-QURAN LIL MUTTAQIN)</p>
           <p><span class="text-gray-300 font-medium">Penyelaras:</span><br>Yayasan Peradaban Jawi Nusantara (YPJN)</p>
-          <p><span class="text-gray-300 font-medium">Sistem Provider:</span><br>Ideahead Studio</p>
         </div>
         <div class="space-y-3 text-right">
            <h4 class="text-amber-400 font-semibold uppercase tracking-wider text-xs mb-2">Hubungi Kami</h4>
            <div class="flex flex-col md:items-end gap-2">
-              <a href="tel:0132079409" class="footer-link flex items-center justify-end gap-2">
-                 <span>013-207 9409</span>
-                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-              </a>
-              <a href="tel:0196525266" class="footer-link flex items-center justify-end gap-2">
-                 <span>019-652 5266</span>
-                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-              </a>
+              <a href="tel:0132079409" class="footer-link flex items-center justify-end gap-2"><span>013-207 9409</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg></a>
            </div>
         </div>
-      </div>
-      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-xs text-gray-600">
-        &copy; 2024 Sistem Kod Jawi. Hak Cipta Terpelihara.
       </div>
     </div>
   </footer>
@@ -326,6 +188,8 @@
       "umar": "عومر", "omar": "عومر", "uthman": "عثمان", "osman": "عثمان", "ali": "علي",
       "abu bakar": "ابو بكر", "bilal": "بلاع", "muaz": "معاذ", "mus'ab": "مصعب", "amin": "امين",
       "hamzah": "حمزة", "ibrahim": "ابراهيم", "ibnu": "ابن", "imran": "عمران", "iman": "ايمان",
+      "shahril": "شهريل", "syahril": "شهريل", "shahrul": "شهرول", "syahrul": "شهرول",
+      "shah": "شه", "syah": "شه", "aishah": "عيشه", 
       "kitab": "كتاب", "ilmu": "علم", "waktu": "وقتو", "huruf": "حروف",
       "hikmah": "حكمة", "haram": "حرام", "halal": "حلال", "akhirat": "اخة",
       "dunia": "دنيا", "daulat": "داولت", "fikir": "فيكير", "nikmat": "نعمة",
@@ -334,14 +198,11 @@
       "taubat": "توبة", "akhir": "اخير", "awal": "اول",
       "gali": "ڬالي", "cuti": "چوتي", "kenduri": "کندوري", "zalim": "ظاليم", "malam": "مالم",
       "mengaji": "مڠاجي", "tuala": "توالا",
-      "shahril": "شهريل", "syahril": "شهريل", 
-      "shahrul": "شهرول", "syahrul": "شهرول", 
       "shala": "شالا", "syala": "شالا", "sharifah": "شريفة", "syarifah": "شريفة",
       "shamsir": "شمسير", "syamsir": "شمسير", "shamsul": "شمسول", "syamsul": "شمسول",
-      "shah": "شه", "syah": "شه", "lari": "لاري", "dari": "دري", "mati": "ماتي", "bagi": "باݢي", 
+      "lari": "لاري", "dari": "دري", "mati": "ماتي", "bagi": "باݢي", 
       "urusan": "اوروسن", "akidah": "عقيده", "akad": "عقد", "syafinas": "شافينس", "alif": "اليف", "ikut": "ايکوت",
-      "kebun": "کبون",
-      "urus": "اوروس", "ubah": "اوبه", "ukiran": "اوکيرن"
+      "kebun": "کبون", "urus": "اوروس", "ubah": "اوبه", "ukiran": "اوکيرن"
     };
 
     window.jawiCache = {};
@@ -369,7 +230,9 @@
       window.elLoading = document.getElementById('loadingSpinner');
       window.elEngineInfo = document.getElementById('engineUsed');
       window.elBtnRegenerate = document.getElementById('btnRegenerate');
-      renderKodTable(''); loadHistory();
+      
+      renderKodTable(''); 
+      loadHistory();
     });
 
     // ================= LOGIC TRANSLITERASI =================
@@ -408,7 +271,7 @@
              if ('aiueo'.includes(next)) { result += CONS_MAP[c] + (next==='a'?'ا':next==='i'?'ي':next==='u'?'و':next==='e'?'ي':'و'); i+=2; continue; }
              if (next && (CONS_MAP[next] || CONS_CLUSTER[next+next2])) { result += CONS_MAP[c]; i++; continue; }
              result += CONS_MAP[c]; i++;
-           } else if ('aiueo'.includes(c)) { result += (c==='a'?'ا':c==='i'?'ي':c==='u'?'و':c==='e'?'ي':'و'; i++; continue; }
+           } else if ('aiueo'.includes(c)) { result += (c==='a'?'ا':c==='i'?'ي':c==='u'?'و':c==='e'?'ي':'و'); i++; continue; }
            else { i++; }
          } return result;
       }).join(' ');
@@ -567,7 +430,6 @@
             else {
                 const prevType = tempBreakdown[index-1].type;
                 const currType = item.type;
-                // If prev or current is 'Kata Hubung', use space (no comma)
                 if (prevType === 'Kata Hubung' || currType === 'Kata Hubung') { sentence += ' ' + item.kod; } 
                 else if (prevType === 'Prefix') { sentence += ' ' + item.kod; }
                 else { sentence += ', ' + item.kod; }
