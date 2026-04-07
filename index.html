@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Syllable Break Fix)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (U Rule Fix)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -180,7 +180,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Syllable Break Fix</p>
+        <p class="text-gray-400">Fasa 1: Hukum Awalan 'U'</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -275,7 +275,7 @@
 
   <footer class="bg-black/20 border-t border-gray-800 mt-12 py-8">
     <div class="max-w-6xl mx-auto px-4">
-      <div class="grid md:grid-cols-2 gap-8 text-sm text-gray-400">
+      <div class="grid md:grid-cols-2 gap=8 text-sm text-gray-400">
         <div class="space-y-3">
           <h4 class="text-amber-400 font-semibold uppercase tracking-wider text-xs mb-2">Maklumat Projek</h4>
           <p><span class="text-gray-300 font-medium">Hakcipta Kod Jawi:</span><br>Mohamed Bin Abbas (INSTITUT TAHFIZ AL-QURAN LIL MUTTAQIN)</p>
@@ -339,7 +339,8 @@
       "shamsir": "شمسير", "syamsir": "شمسير", "shamsul": "شمسول", "syamsul": "شمسول",
       "shah": "شاه", "syah": "شاه", "lari": "لاري", "dari": "دري", "mati": "ماتي", "bagi": "باݢي", 
       "urusan": "اوروسن", "akidah": "عقيده", "akad": "عقد", "syafinas": "شافينس", "alif": "اليف", "ikut": "ايکوت",
-      "kebun": "کبون"
+      "kebun": "کبون",
+      "urus": "اوروس", "ubah": "اوبه", "ukiran": "اوکيرن"
     };
 
     window.jawiCache = {};
@@ -414,7 +415,7 @@
 
     function updateApiStatus(s, t) { if(!elApiStatus) return; elApiStatus.className='status-pill'; elApiStatus.textContent=t||s; elApiStatus.classList.remove('status-api','status-local','status-locked'); elApiStatus.classList.add(s==='api'?'status-api':s==='locked'?'status-locked':'status-local'); if(elEngineInfo) elEngineInfo.textContent=`Sumber: ${t||s}`; }
 
-    // ================= LOGIC PENGKODAN (SYLLABLE BREAK FIX) =================
+    // ================= LOGIC PENGKODAN =================
     function kodkanWord(word, isNeg) {
       let breakdown = [], i = 0, len = word.length;
       let prefix = isNeg ? 'Tiada punyai' : 'Punyai';
@@ -479,12 +480,22 @@
 
         // 6. UNIT ALIF (Start)
         if (char==='ا' && i===0) {
+            
+            // NEW RULE: Alif + Wau (U) -> "Aturan yang jelas"
+            if (next === 'و') {
+                addPart('aturan yang jelas', 'او', 'Alif+Wau Awal', 'Kombinasi');
+                i += 2; 
+                continue;
+            }
+
+            // Alif + Ya (I)
             if (next === 'ي') {
                 addPart('dikuasai oleh aturan yang ada tanda-tanda kejayaan', 'اي', 'Alif+Ya Awal', 'Kombinasi');
                 prefix = ''; 
                 i += 2; continue;
             }
 
+            // Alif Alone (A)
             addPart('aturan', 'ا', 'Aturan', 'Biasa');
             
             if (next==='ر' && nextNext==='ي') {
@@ -536,20 +547,15 @@
            i+=2; continue;
         }
         
-        // FIX: Konsonan + Konsonan (Syllable Break Check)
-        // If 'next' is followed by a vowel, 'next' is the start of a new syllable. Do not merge.
+        // FIX: Syllable Break Logic (Kebun)
         if (isKonsonan(char)&&isKonsonan(next)) {
-           // Check if next starts a CV syllable (Next is followed by Vowel)
-           // KEBUN: Kaf (C), Ba (C), Wau (V). Ba is followed by vowel -> Break.
            const isSyllableBreak = nextNext && ['ا','ي','و'].includes(nextNext);
            let isNextSpecial = (next==='ر'&&nextNext==='ي')||(next==='ل'&&nextNext==='ا')||(next==='ق')||(next==='ڽ');
            
-           // Only merge if NO syllable break and NO special patterns
            if(!isSyllableBreak && !isNextSpecial) { 
              addPart(`${KOD_JAWI[char].toLowerCase()} dengan adanya ${(next==='ر'?'keyakinan':KOD_JAWI[next].toLowerCase())}`, char+next, 'Konsonan+Konsonan', 'Kombinasi'); 
              i+=2; continue; 
            }
-           // Else: Fall through to Huruf Biasa to handle 'char' separately
         }
 
         // 8. HURUF BIASA
@@ -568,9 +574,7 @@
     // ================= SMART SENTENCE BUILDER =================
     function buildSentence(breakdown, prefix) {
         let tempBreakdown = [];
-        if (prefix) {
-            tempBreakdown.push({ kod: prefix.trim(), type: 'Prefix' });
-        }
+        if (prefix) { tempBreakdown.push({ kod: prefix.trim(), type: 'Prefix' }); }
         tempBreakdown = tempBreakdown.concat(breakdown);
 
         let sentence = '';
@@ -582,15 +586,9 @@
                 const prevType = tempBreakdown[index-1].type;
                 const currType = item.type;
                 
-                if (prevType === 'Kata Hubung' || currType === 'Kata Hubung') {
-                    sentence += ' ' + item.kod;
-                } 
-                else if (prevType === 'Prefix') {
-                    sentence += ' ' + item.kod;
-                }
-                else {
-                    sentence += ', ' + item.kod;
-                }
+                if (prevType === 'Kata Hubung' || currType === 'Kata Hubung') { sentence += ' ' + item.kod; } 
+                else if (prevType === 'Prefix') { sentence += ' ' + item.kod; }
+                else { sentence += ', ' + item.kod; }
             }
         });
         
@@ -626,14 +624,11 @@
       if(!jawiText.trim()) return;
       const isNeg=document.getElementById('checkNegative').checked||NEGATIVE_WORDS.some(w=>rumiInput.toLowerCase().includes(w));
       const words=jawiText.trim().split(/\s+/);
-      let allBreakdown=[];
-      let finalPrefix = '';
+      let allBreakdown=[]; let finalPrefix = '';
       
       words.forEach(w => { 
         const res=kodkanWord(w,isNeg); 
-        if(allBreakdown.length === 0) {
-            finalPrefix = res.prefix;
-        }
+        if(allBreakdown.length === 0) { finalPrefix = res.prefix; }
         allBreakdown.push(...res.breakdown); 
       });
 
