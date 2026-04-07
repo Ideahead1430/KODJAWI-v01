@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (U Rule Fix)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Grammar Fix)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -180,7 +180,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Hukum Awalan 'U'</p>
+        <p class="text-gray-400">Fasa 1: Grammar Polish</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -275,7 +275,7 @@
 
   <footer class="bg-black/20 border-t border-gray-800 mt-12 py-8">
     <div class="max-w-6xl mx-auto px-4">
-      <div class="grid md:grid-cols-2 gap=8 text-sm text-gray-400">
+      <div class="grid md:grid-cols-2 gap-8 text-sm text-gray-400">
         <div class="space-y-3">
           <h4 class="text-amber-400 font-semibold uppercase tracking-wider text-xs mb-2">Maklumat Projek</h4>
           <p><span class="text-gray-300 font-medium">Hakcipta Kod Jawi:</span><br>Mohamed Bin Abbas (INSTITUT TAHFIZ AL-QURAN LIL MUTTAQIN)</p>
@@ -415,7 +415,7 @@
 
     function updateApiStatus(s, t) { if(!elApiStatus) return; elApiStatus.className='status-pill'; elApiStatus.textContent=t||s; elApiStatus.classList.remove('status-api','status-local','status-locked'); elApiStatus.classList.add(s==='api'?'status-api':s==='locked'?'status-locked':'status-local'); if(elEngineInfo) elEngineInfo.textContent=`Sumber: ${t||s}`; }
 
-    // ================= LOGIC PENGKODAN =================
+    // ================= LOGIC PENGKODAN (GRAMMAR FIX) =================
     function kodkanWord(word, isNeg) {
       let breakdown = [], i = 0, len = word.length;
       let prefix = isNeg ? 'Tiada punyai' : 'Punyai';
@@ -432,9 +432,11 @@
         if (char==='ع'&&next==='ا'&&nextNext==='ء') { addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         if ((char==='ڽ'||char==='ق'||char==='ز')&&next==='ي'&&nextNext==='ا') { addPart(`demi ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         
-        // C+Y+C (Generic)
+        // C+Y+C (Generic) - FIX: Grammar for Ra
         if (isKonsonan(char)&&next==='ي'&&isKonsonan(nextNext)) { 
-           addPart(`dikuasai oleh ${(char==='ر'?'keyakinan':KOD_JAWI[char].toLowerCase())} yang ada tanda-tanda kejayaan serta ${KOD_JAWI[nextNext].toLowerCase()}`, char+'ي'+nextNext, 'Pola 3 Huruf', 'Kombinasi'); 
+           // Fix: If second consonant is Ra, use 'keyakinan' instead of 'yakin'
+           let c2Text = (nextNext === 'ر' ? 'keyakinan' : KOD_JAWI[nextNext].toLowerCase());
+           addPart(`dikuasai oleh ${(char==='ر'?'keyakinan':KOD_JAWI[char].toLowerCase())} yang ada tanda-tanda kejayaan serta ${c2Text}`, char+'ي'+nextNext, 'Pola 3 Huruf', 'Kombinasi'); 
            if(i===0) prefix=''; 
            i+=3; continue; 
         }
@@ -481,11 +483,10 @@
         // 6. UNIT ALIF (Start)
         if (char==='ا' && i===0) {
             
-            // NEW RULE: Alif + Wau (U) -> "Aturan yang jelas"
+            // Alif + Wau (U) -> "Aturan yang jelas"
             if (next === 'و') {
                 addPart('aturan yang jelas', 'او', 'Alif+Wau Awal', 'Kombinasi');
-                i += 2; 
-                continue;
+                i += 2; continue;
             }
 
             // Alif + Ya (I)
@@ -498,16 +499,20 @@
             // Alif Alone (A)
             addPart('aturan', 'ا', 'Aturan', 'Biasa');
             
+            // Peek for Ri
             if (next==='ر' && nextNext==='ي') {
                addConn('dikuasai oleh');
                addPart('keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Kombinasi', 'Kombinasi');
                i+=3; continue;
             }
+            // Peek for C+Y+C
             if (isKonsonan(next) && nextNext==='ي' && isKonsonan(nextNextNext)) {
                addConn('dikuasai oleh');
                let c1 = next, c2 = nextNextNext;
                let k1 = (c1==='ر'?'keyakinan':KOD_JAWI[c1].toLowerCase());
-               addPart(`${k1} yang ada tanda-tanda kejayaan serta ${KOD_JAWI[c2].toLowerCase()}`, c1+'ي'+c2, 'Kombinasi', 'Kombinasi');
+               // Fix: Grammar for Ra in peek block
+               let c2Text = (c2 === 'ر' ? 'keyakinan' : KOD_JAWI[c2].toLowerCase());
+               addPart(`${k1} yang ada tanda-tanda kejayaan serta ${c2Text}`, c1+'ي'+c2, 'Kombinasi', 'Kombinasi');
                i+=4; continue;
             }
             
@@ -547,7 +552,7 @@
            i+=2; continue;
         }
         
-        // FIX: Syllable Break Logic (Kebun)
+        // Syllable Break Logic
         if (isKonsonan(char)&&isKonsonan(next)) {
            const isSyllableBreak = nextNext && ['ا','ي','و'].includes(nextNext);
            let isNextSpecial = (next==='ر'&&nextNext==='ي')||(next==='ل'&&nextNext==='ا')||(next==='ق')||(next==='ڽ');
@@ -580,12 +585,10 @@
         let sentence = '';
         
         tempBreakdown.forEach((item, index) => {
-            if (index === 0) {
-                sentence = item.kod;
-            } else {
+            if (index === 0) { sentence = item.kod; } 
+            else {
                 const prevType = tempBreakdown[index-1].type;
                 const currType = item.type;
-                
                 if (prevType === 'Kata Hubung' || currType === 'Kata Hubung') { sentence += ' ' + item.kod; } 
                 else if (prevType === 'Prefix') { sentence += ' ' + item.kod; }
                 else { sentence += ', ' + item.kod; }
