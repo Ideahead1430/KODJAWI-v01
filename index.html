@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SISTEM KOD JAWI - Fasa 1 (Syllable Analyzer Fix)</title>
+  <title>SISTEM KOD JAWI - Fasa 1 (Ra "Dipunyai" Logic)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@
           <img src="https://arleta.site/interactivelink/2950/Logo-5-Big.jpg" alt="Logo Institusi" class="mx-auto w-28 h-28 rounded-full shadow-xl border-4 border-amber-500/30 object-cover">
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-2 tracking-tight">SISTEM KOD JAWI</h1>
-        <p class="text-gray-400">Fasa 1: Syllable Analyzer Fix (WISMA)</p>
+        <p class="text-gray-400">Fasa 1: Hukum Ra "Dipunyai"</p>
       </header>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -144,17 +144,12 @@
       'ء': 'Muslihat', 'ي': 'Tanda-tanda kejayaan', 'ڽ': 'Mentauhidkan kejayaan sistem rangkaian'
     };
     const NEGATIVE_WORDS = ['munafik', 'haram', 'zalim', 'kafir', 'fasik', 'keji', 'jadah', 'sombong'];
-    const KAMUS_KHAS = { "shahril": "شهريل", "syahril": "شهريل", "shahrul": "شهرول", "syahrul": "شهرول", "shah": "شه", "syah": "شه", "wisma": "ويسما" };
+    const KAMUS_KHAS = { "shahril": "شهريل", "syahril": "شهريل", "shahrul": "شهرول", "syahrul": "شهرول", "shah": "شه", "syah": "شه", "wisma": "ويسما", "raden": "رادين", "hantar": "هنتر" };
     window.jawiCache = {};
     const CONS_MAP = { 'b':'ب', 'c':'چ', 'd':'د', 'f':'ف', 'g':'ݢ', 'h':'ه', 'j':'ج', 'k':'ک', 'l':'ل', 'm':'م', 'n':'ن', 'p':'ڤ', 'q':'ق', 'r':'ر', 's':'س', 't':'ت', 'v':'ۏ', 'w':'و', 'x':'کس', 'y':'ي', 'z':'ز' };
     const CONS_CLUSTER = { 'ng':'ڠ', 'ny':'ڽ', 'sy':'ش', 'sh':'ش', 'kh':'خ', 'gh':'غ', 'dz':'ذ', 'ts':'ث' };
     const API_URL = 'https://ebayt.muip.gov.my/jawi/libjawi.php';
-    
-    // Fix: Recognize Wau (و) as consonant for C+Y+C patterns (like WIS in WISMA)
-    const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','لا','ء'].includes(c); 
-    // Note: 'و' removed from exclusion list logic internally inside the specific checks if needed, 
-    // or we handle 'و' specifically in the pattern check.
-
+    const isKonsonan = (c) => c && KOD_JAWI[c] && !['ا','ي','لا','ء'].includes(c);
     let historyData = [], debounceTimer = null, currentJawiResult = '';
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -216,7 +211,7 @@
 
     function updateApiStatus(s, t) { if(!elApiStatus) return; elApiStatus.className='status-pill'; elApiStatus.textContent=t||s; elApiStatus.classList.remove('status-api','status-local','status-locked'); elApiStatus.classList.add(s==='api'?'status-api':s==='locked'?'status-locked':'status-local'); if(elEngineInfo) elEngineInfo.textContent=`Sumber: ${t||s}`; }
 
-    // ================= LOGIC PENGKODAN (FIXED) =================
+    // ================= LOGIC PENGKODAN (RA DIPUNYAI IMPLEMENTED) =================
     function kodkanWord(word, isNeg) {
       let breakdown = [], i = 0, len = word.length;
       let prefix = isNeg ? 'Tiada punyai' : 'Punyai';
@@ -233,8 +228,7 @@
         if (char==='ع'&&next==='ا'&&nextNext==='ء') { addPart('strategi untuk diatur/mengatur berlandaskan muslihat', 'عاء', 'Pola Khas عاء', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         if ((char==='ڽ'||char==='ق'||char==='ز')&&next==='ي'&&nextNext==='ا') { addPart(`demi ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan untuk diatur/mengatur`, char+'يا', 'Pola Khas', 'Pola Khas'); if(i===0) prefix=''; i+=3; continue; }
         
-        // C+Y+C (Generic) - FIX: Include Wau (و) as Consonant for this pattern
-        // Logic: If char is Consonant OR Wau, followed by Ya, followed by Consonant
+        // C+Y+C (Generic)
         if ((isKonsonan(char) || char === 'و') && next==='ي' && isKonsonan(nextNext)) { 
            let c1Text = (char === 'ر' ? 'keyakinan' : (char === 'و' ? 'jelas' : KOD_JAWI[char].toLowerCase()));
            let c2Text = (nextNext === 'ر' ? 'keyakinan' : KOD_JAWI[nextNext].toLowerCase());
@@ -254,8 +248,33 @@
           continue;
         }
         
-        // 3. UNIT RI (Ra + Ya)
-        if (char==='ر'&&next==='ي') { addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi'); if(i===0) prefix=''; i+=2; continue; }
+        // 3. UNIT RA (UPDATED RULES)
+        if (char === 'ر') {
+            // Gabungan Ra + Alif (را)
+            if (next === 'ا') {
+                addPart('keyakinan dengan adanya aturan', 'را', 'Gabungan را', 'Kombinasi');
+                i += 2; continue;
+            }
+            // Gabungan Ra + Ya (ري)
+            if (next === 'ي') {
+                addPart('dikuasai oleh keyakinan yang ada tanda-tanda kejayaan', 'ري', 'Gabungan ري', 'Kombinasi');
+                i += 2; continue;
+            }
+            // Ra Awal Perkataan
+            if (i === 0) {
+                addPart('keyakinan', 'ر', 'Keyakinan', 'Posisi'); i++; continue;
+            }
+            // Ra "Dipunyai" (End of word / Alone) - Fallback
+            addPart('yang diyakini', 'ر', 'Yang diyakini', 'Posisi'); i++; continue;
+        }
+
+        // 3B. POLA KONSONAN + RA (C+R) - NEW RULE
+        // Logic: If Current is Konsonan (not Ra) AND Next is Ra.
+        // This catches "Ta + Ra" (تر) in "Hantar".
+        if (isKonsonan(char) && char !== 'ر' && next === 'ر') {
+            addPart(`${KOD_JAWI[char].toLowerCase()} yang diyakini`, char+'ر', 'Konsonan+Ra', 'Kombinasi');
+            i += 2; continue;
+        }
 
         // 4. POLA SHAH (UNIFIED)
         if (char === 'ش' && next === 'ه') { addPart('penegasan terikat dengan adanya jemaah', 'شه', 'Pola Shah', 'Kombinasi'); i += 2; continue; }
@@ -302,21 +321,10 @@
         }
 
         // 7. STANDARD UNITS
-        // Wau (و) Logic: Treat as Consonant for syllable break checks
         if (char==='و') {
-           // Check C+Wau pattern? No, Wau is W.
-           // If followed by consonant, it's a syllable break (WIS-MA).
-           // If followed by vowel, it forms a syllable (WA, WI, WU).
-           // The `localTransliterate` handles writing.
-           // Here we process Jawi result.
-           // If `و` is standalone or followed by consonant, it's "Jelas".
-           // If followed by vowel (rare in Malay start?), but in middle `سوار` -> `س` `و` `ا` `ر`.
-           // `و` `ا` -> `Jelas dengan adanya aturan`.
            if (next==='ا') { addPart(`jelas dengan adanya aturan`, 'وا', 'Konsonan+Alif', 'Kombinasi'); i+=2; continue; }
-           
            addPart('jelas', 'و', 'Jelas', 'Biasa'); i++; continue;
         }
-
         if (isKonsonan(char)&&next==='و') { addPart(`${KOD_JAWI[char].toLowerCase()} yang jelas`, char+'و', 'Konsonan+Wau', 'Kombinasi'); i+=2; continue; }
         if (isKonsonan(char)&&next==='ي'&&(i===len-2)) { addPart(`dikuasai oleh ${KOD_JAWI[char].toLowerCase()} yang ada tanda-tanda kejayaan`, char+'ي', 'Huruf+Ya', 'Kombinasi'); i+=2; continue; }
         if (isKonsonan(char)&&next==='ا') {
@@ -327,10 +335,11 @@
            i+=2; continue;
         }
         
-        // Syllable Break Logic: Wau acts as Consonant
+        // Syllable Break Logic
         if ( (isKonsonan(char) || char === 'و') && isKonsonan(next) ) {
            const isSyllableBreak = nextNext && ['ا','ي','و'].includes(nextNext);
            let isNextSpecial = (next==='ر'&&nextNext==='ي')||(next==='ل'&&nextNext==='ا')||(next==='ق')||(next==='ڽ');
+           // Note: 'next===ر' handled by C+R rule above.
            if(!isSyllableBreak && !isNextSpecial) { 
              let c1Text = (char === 'و' ? 'jelas' : (char==='ر'?'keyakinan':KOD_JAWI[char].toLowerCase()));
              let c2Text = (next==='ر'?'keyakinan':KOD_JAWI[next].toLowerCase());
@@ -341,7 +350,6 @@
 
         // 8. HURUF BIASA
         if (char==='ه') { if (i === len - 1) { addPart('terikat dengan adanya jemaah', 'ه', 'Terikat jemaah', 'Kombinasi'); } else { addPart('jemaah', 'ه', 'Jemaah', 'Biasa'); } i++; continue; }
-        if (char==='ر') { addPart((i===0?'keyakinan':'yang diyakini'), 'ر', (i===0?'Keyakinan':'Yang diyakini'), 'Posisi'); i++; continue; }
         if (char==='ن') { addPart((i===len-1?'dengan adanya pembeza':'pembeza'), 'ن', (i===len-1?'Nun Hujung':'Pembeza'), 'Biasa'); i++; continue; }
         if (char==='ي') { addPart('tanda-tanda kejayaan', 'ي', 'Tanda-tanda kejayaan', 'Biasa'); i++; continue; }
 
